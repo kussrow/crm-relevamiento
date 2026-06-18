@@ -12,6 +12,7 @@ services:
       DATABASE_URL: postgres://crm:${DB_PASSWORD}@crm_db:5432/crm
       CRM_PASSWORD: ${CRM_PASSWORD}
       AUTH_SECRET: ${AUTH_SECRET}
+      INGEST_TOKEN: ${INGEST_TOKEN}
       NODE_ENV: production
     depends_on:
       - crm_db

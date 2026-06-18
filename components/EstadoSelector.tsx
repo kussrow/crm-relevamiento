@@ -24,10 +24,10 @@ export default function EstadoSelector({
             key={e}
             disabled={pending}
             onClick={() => startTransition(() => setEstadoAction(id, e))}
-            className={`flex items-center gap-1.5 rounded-full border px-3 py-1 text-sm font-medium transition-colors disabled:opacity-50 ${
+            className={`flex items-center gap-1.5 rounded-md border px-3 py-1 text-sm transition-colors disabled:opacity-50 ${
               active
-                ? info.className
-                : "border-slate-200 bg-white text-slate-500 hover:bg-slate-50"
+                ? "border-zinc-900 font-medium text-zinc-900"
+                : "border-zinc-200 text-zinc-400 hover:text-zinc-700"
             }`}
           >
             <span className={`h-1.5 w-1.5 rounded-full ${info.dot}`} />

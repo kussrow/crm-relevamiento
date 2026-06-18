@@ -4,6 +4,7 @@ import { getLead } from "@/lib/leads";
 import { TemperaturaBadge, NegocioBadge } from "@/components/badges";
 import EstadoSelector from "@/components/EstadoSelector";
 import NotasEditor from "@/components/NotasEditor";
+import Conversacion from "@/components/Conversacion";
 import { whatsappLink, formatFecha } from "@/lib/scoring";
 
 export const dynamic = "force-dynamic";
@@ -77,8 +78,12 @@ export default async function LeadPage({
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">
-        {/* Mensaje + notas */}
+        {/* Conversación + mensaje + notas */}
         <div className="space-y-4 md:col-span-2">
+          {lead.telefono && (
+            <Conversacion negocio={lead.negocio} telefono={lead.telefono} />
+          )}
+
           <section className="rounded-xl border border-slate-200 bg-white p-5">
             <h2 className="mb-2 text-sm font-semibold text-slate-700">
               Mensaje original

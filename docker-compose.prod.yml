@@ -13,6 +13,8 @@ services:
       CRM_PASSWORD: ${CRM_PASSWORD}
       AUTH_SECRET: ${AUTH_SECRET}
       INGEST_TOKEN: ${INGEST_TOKEN}
+      EVOLUTION_URL: ${EVOLUTION_URL}
+      EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
       NODE_ENV: production
     depends_on:
       - crm_db

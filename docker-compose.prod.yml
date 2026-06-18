@@ -1,0 +1,39 @@
+# Stack de producción del CRM (se construye en el VPS)
+# Uso:  docker compose -f docker-compose.prod.yml up -d --build
+services:
+  crm_app:
+    build: .
+    image: crm-relevamiento:latest
+    container_name: crm_app
+    restart: always
+    ports:
+      - "127.0.0.1:3000:3000" # solo local; nginx hace el proxy con SSL
+    environment:
+      DATABASE_URL: postgres://crm:${DB_PASSWORD}@crm_db:5432/crm
+      CRM_PASSWORD: ${CRM_PASSWORD}
+      AUTH_SECRET: ${AUTH_SECRET}
+      NODE_ENV: production
+    depends_on:
+      - crm_db
+    networks:
+      - crm-net
+
+  crm_db:
+    image: postgres:15
+    container_name: crm_db
+    restart: always
+    environment:
+      POSTGRES_USER: crm
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: crm
+    volumes:
+      - crm_pgdata:/var/lib/postgresql/data
+    networks:
+      - crm-net
+
+volumes:
+  crm_pgdata:
+
+networks:
+  crm-net:
+    driver: bridge

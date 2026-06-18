@@ -1,0 +1,21 @@
+# Postgres local para desarrollo del CRM
+# Levantar:  docker compose -f docker-compose.dev.yml up -d
+# El schema y los datos de ejemplo se cargan solos la primera vez.
+services:
+  crm_db_dev:
+    image: postgres:15
+    container_name: crm_db_dev
+    restart: unless-stopped
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_USER: crm
+      POSTGRES_PASSWORD: crm_pass
+      POSTGRES_DB: crm
+    volumes:
+      - crm_dev_pgdata:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./db/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+
+volumes:
+  crm_dev_pgdata:

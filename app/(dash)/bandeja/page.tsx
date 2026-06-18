@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getLeads, getCategorias, type LeadFilters } from "@/lib/leads";
 import Filtros from "@/components/Filtros";
 import { TemperaturaBadge, EstadoBadge, NegocioBadge } from "@/components/badges";
+import BotonEliminar from "@/components/BotonEliminar";
 import { timeAgo } from "@/lib/scoring";
 
 export const dynamic = "force-dynamic";
@@ -49,12 +50,13 @@ export default async function BandejaPage({
               <th className="px-4 py-3 font-medium">Consulta</th>
               <th className="px-4 py-3 font-medium">Estado</th>
               <th className="px-4 py-3 text-right font-medium">Fecha</th>
+              <th className="px-2 py-3"></th>
             </tr>
           </thead>
           <tbody>
             {leads.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-12 text-center text-slate-400">
+                <td colSpan={8} className="px-4 py-12 text-center text-slate-400">
                   No hay consultas que coincidan con los filtros.
                 </td>
               </tr>
@@ -96,6 +98,9 @@ export default async function BandejaPage({
                 </td>
                 <td className="px-4 py-3 text-right text-xs text-slate-400">
                   {timeAgo(lead.fecha_mensaje)}
+                </td>
+                <td className="px-2 py-3 text-right">
+                  <BotonEliminar id={lead.id} variant="compact" />
                 </td>
               </tr>
             ))}

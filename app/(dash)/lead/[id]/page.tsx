@@ -5,6 +5,7 @@ import { TemperaturaBadge, NegocioBadge } from "@/components/badges";
 import EstadoSelector from "@/components/EstadoSelector";
 import NotasEditor from "@/components/NotasEditor";
 import Conversacion from "@/components/Conversacion";
+import BotonEliminar from "@/components/BotonEliminar";
 import { whatsappLink, formatFecha } from "@/lib/scoring";
 
 export const dynamic = "force-dynamic";
@@ -57,16 +58,19 @@ export default async function LeadPage({
               <span className="font-medium text-slate-600">score {lead.score}</span>
             </div>
           </div>
-          {wa && (
-            <a
-              href={wa}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
-            >
-              💬 Abrir WhatsApp
-            </a>
-          )}
+          <div className="flex items-center gap-2">
+            {wa && (
+              <a
+                href={wa}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded-lg bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+              >
+                💬 Abrir WhatsApp
+              </a>
+            )}
+            <BotonEliminar id={lead.id} redirectTo="/bandeja" />
+          </div>
         </div>
 
         <div className="mt-4 border-t border-slate-100 pt-4">

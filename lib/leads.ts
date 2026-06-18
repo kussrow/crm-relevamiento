@@ -140,6 +140,10 @@ export async function updateEstado(id: number, estado: Estado): Promise<void> {
   );
 }
 
+export async function deleteLead(id: number): Promise<void> {
+  await query(`DELETE FROM leads WHERE id = $1`, [id]);
+}
+
 export async function updateNotas(id: number, notas: string): Promise<void> {
   await query(`UPDATE leads SET notas = $1, updated_at = now() WHERE id = $2`, [
     notas,

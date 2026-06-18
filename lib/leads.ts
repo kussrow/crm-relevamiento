@@ -53,6 +53,74 @@ export async function getLead(id: number): Promise<Lead | null> {
   return queryOne<Lead>(`SELECT * FROM leads WHERE id = $1`, [id]);
 }
 
+export interface LeadInput {
+  negocio?: string;
+  fecha_mensaje?: string;
+  nombre?: string;
+  telefono?: string;
+  tipo_mensaje?: string;
+  mensaje?: string;
+  categoria?: string;
+  subcategoria?: string;
+  producto?: string;
+  detalle?: string;
+  ciudad?: string;
+  provincia?: string;
+  intencion?: string;
+  urgencia?: string;
+  requiere_humano?: boolean | string;
+  resumen?: string;
+  pregunta?: string;
+  forma_pago?: string;
+  precio?: string;
+  cantidad?: string;
+  problema?: string;
+  respuesta_sugerida?: string;
+  etiquetas?: string;
+  raw?: unknown;
+}
+
+export async function insertLead(d: LeadInput): Promise<number> {
+  const rh = d.requiere_humano === true || d.requiere_humano === "true";
+  const rows = await query<{ id: number }>(
+    `INSERT INTO leads (
+       negocio, fecha_mensaje, nombre, telefono, tipo_mensaje, mensaje,
+       categoria, subcategoria, producto, detalle, ciudad, provincia,
+       intencion, urgencia, requiere_humano, resumen, pregunta,
+       forma_pago, precio, cantidad, problema, respuesta_sugerida, etiquetas, raw
+     ) VALUES (
+       $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24
+     ) RETURNING id`,
+    [
+      d.negocio || "otro",
+      d.fecha_mensaje || null,
+      d.nombre || null,
+      d.telefono || null,
+      d.tipo_mensaje || null,
+      d.mensaje || null,
+      d.categoria || null,
+      d.subcategoria || null,
+      d.producto || null,
+      d.detalle || null,
+      d.ciudad || null,
+      d.provincia || null,
+      d.intencion || null,
+      d.urgencia || null,
+      rh,
+      d.resumen || null,
+      d.pregunta || null,
+      d.forma_pago || null,
+      d.precio || null,
+      d.cantidad || null,
+      d.problema || null,
+      d.respuesta_sugerida || null,
+      d.etiquetas || null,
+      d.raw ? JSON.stringify(d.raw) : null,
+    ]
+  );
+  return rows[0]?.id;
+}
+
 // Leads prioritarios para atender desde el dashboard:
 // calientes o que requieren humano, todavía sin cerrar.
 export async function getPrioritarios(): Promise<Lead[]> {

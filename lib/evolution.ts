@@ -15,10 +15,6 @@ type RawMsg = {
   messageTimestamp?: number | string;
 };
 
-function jidOf(telefono: string): string {
-  return `${telefono.replace(/\D/g, "")}@s.whatsapp.net`;
-}
-
 function extractText(m: RawMsg): string {
   const msg = (m.message || {}) as Record<string, unknown>;
   const ext = msg.extendedTextMessage as { text?: string } | undefined;
@@ -34,22 +30,48 @@ function extractText(m: RawMsg): string {
   return "(mensaje)";
 }
 
+async function queryMessages(
+  instance: string,
+  key: Record<string, string>
+): Promise<RawMsg[]> {
+  try {
+    const res = await fetch(`${EVO_URL}/chat/findMessages/${instance}`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: EVO_KEY },
+      body: JSON.stringify({ where: { key } }),
+      cache: "no-store",
+    });
+    if (!res.ok) return [];
+    const data = await res.json();
+    const recs = data?.messages?.records ?? data?.messages ?? data?.records ?? [];
+    return Array.isArray(recs) ? recs : [];
+  } catch {
+    return [];
+  }
+}
+
 export async function fetchMessages(
   instance: string,
   telefono: string
 ): Promise<ChatMessage[]> {
-  const res = await fetch(`${EVO_URL}/chat/findMessages/${instance}`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json", apikey: EVO_KEY },
-    body: JSON.stringify({ where: { key: { remoteJid: jidOf(telefono) } } }),
-    cache: "no-store",
-  });
-  if (!res.ok) throw new Error(`Evolution findMessages ${res.status}`);
-  const data = await res.json();
-  const recordsUnknown =
-    data?.messages?.records ?? data?.messages ?? data?.records ?? data ?? [];
-  const arr: RawMsg[] = Array.isArray(recordsUnknown) ? recordsUnknown : [];
-  return arr
+  const num = telefono.replace(/\D/g, "");
+  // WhatsApp usa "lid": el teléfono puede estar en remoteJidAlt o en remoteJid
+  // (formato clásico @s.whatsapp.net o nuevo @lid). Buscamos en todos y combinamos.
+  const results = await Promise.all([
+    queryMessages(instance, { remoteJidAlt: `${num}@s.whatsapp.net` }),
+    queryMessages(instance, { remoteJid: `${num}@s.whatsapp.net` }),
+    queryMessages(instance, { remoteJid: `${num}@lid` }),
+  ]);
+
+  const byId = new Map<string, RawMsg>();
+  for (const arr of results) {
+    for (const m of arr) {
+      const id = m.key?.id ?? String(m.messageTimestamp);
+      if (!byId.has(id)) byId.set(id, m);
+    }
+  }
+
+  return [...byId.values()]
     .map((m) => ({
       id: m.key?.id ?? String(m.messageTimestamp),
       fromMe: !!m.key?.fromMe,

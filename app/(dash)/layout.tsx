@@ -1,4 +1,5 @@
 import Sidebar from "@/components/Sidebar";
+import Topbar from "@/components/Topbar";
 
 export default function DashLayout({
   children,
@@ -6,7 +7,10 @@ export default function DashLayout({
   return (
     <div className="flex min-h-screen">
       <Sidebar />
-      <main className="flex-1 overflow-x-hidden">{children}</main>
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Topbar />
+        <main className="flex-1 overflow-x-hidden">{children}</main>
+      </div>
     </div>
   );
 }

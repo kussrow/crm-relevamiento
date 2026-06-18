@@ -2,49 +2,75 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
+import { LayoutDashboard, Inbox, PanelLeft } from "lucide-react";
 
 const links = [
-  { href: "/", label: "Tablero" },
-  { href: "/bandeja", label: "Bandeja" },
+  { href: "/", label: "Tablero", icon: LayoutDashboard },
+  { href: "/bandeja", label: "Bandeja", icon: Inbox },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const [collapsed, setCollapsed] = useState(false);
+
+  useEffect(() => {
+    setCollapsed(localStorage.getItem("sidebar-collapsed") === "1");
+  }, []);
+
+  const toggle = () =>
+    setCollapsed((c) => {
+      localStorage.setItem("sidebar-collapsed", c ? "0" : "1");
+      return !c;
+    });
+
   return (
-    <aside className="flex w-52 shrink-0 flex-col border-r border-zinc-200 bg-white">
-      <div className="px-5 py-5">
-        <div className="text-sm font-semibold tracking-tight text-zinc-900">CRM</div>
-        <div className="text-xs text-zinc-400">Relevamiento</div>
+    <aside
+      className={`flex ${
+        collapsed ? "w-16" : "w-52"
+      } shrink-0 flex-col border-r border-border bg-card transition-[width] duration-200`}
+    >
+      <div
+        className={`flex items-center ${
+          collapsed ? "justify-center" : "justify-between"
+        } px-3 py-4`}
+      >
+        {!collapsed && (
+          <span className="px-2 text-sm font-semibold tracking-tight text-fg">CRM</span>
+        )}
+        <button
+          onClick={toggle}
+          className="rounded-md p-2 text-muted transition-colors hover:bg-hover hover:text-fg"
+          title={collapsed ? "Expandir" : "Colapsar"}
+        >
+          <PanelLeft className="h-4 w-4" />
+        </button>
       </div>
-      <nav className="flex flex-col gap-0.5 px-3">
+
+      <nav className="flex flex-col gap-0.5 px-2">
         {links.map((l) => {
+          const Icon = l.icon;
           const active =
             l.href === "/" ? pathname === "/" : pathname.startsWith(l.href);
           return (
             <Link
               key={l.href}
               href={l.href}
-              className={`rounded-md px-3 py-2 text-sm transition-colors ${
+              title={l.label}
+              className={`flex items-center gap-3 rounded-md px-3 py-2 text-sm transition-colors ${
+                collapsed ? "justify-center" : ""
+              } ${
                 active
-                  ? "bg-zinc-100 font-medium text-zinc-900"
-                  : "text-zinc-500 hover:bg-zinc-50 hover:text-zinc-800"
+                  ? "bg-hover font-medium text-fg"
+                  : "text-muted hover:bg-hover hover:text-fg"
               }`}
             >
-              {l.label}
+              <Icon className="h-4 w-4 shrink-0" />
+              {!collapsed && l.label}
             </Link>
           );
         })}
       </nav>
-      <div className="mt-auto p-3">
-        <form action="/api/logout" method="post">
-          <button
-            type="submit"
-            className="w-full rounded-md px-3 py-2 text-left text-sm text-zinc-400 hover:bg-zinc-50 hover:text-zinc-600"
-          >
-            Salir
-          </button>
-        </form>
-      </div>
     </aside>
   );
 }

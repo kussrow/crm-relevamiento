@@ -44,8 +44,8 @@ export default function Filtros({ categorias }: { categorias: string[] }) {
   const chip = (active: boolean) =>
     `rounded-md border px-3 py-1 text-sm transition-colors ${
       active
-        ? "border-zinc-900 bg-zinc-900 text-white"
-        : "border-zinc-200 bg-white text-zinc-500 hover:bg-zinc-50"
+        ? "border-accent bg-accent text-accent-fg"
+        : "border-border bg-card text-muted hover:bg-hover"
     }`;
 
   return (
@@ -77,7 +77,7 @@ export default function Filtros({ categorias }: { categorias: string[] }) {
       <select
         value={get("estado")}
         onChange={(e) => setParam("estado", e.target.value)}
-        className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700"
+        className="rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-fg"
       >
         {ESTADOS.map((e) => (
           <option key={e.value} value={e.value}>
@@ -89,7 +89,7 @@ export default function Filtros({ categorias }: { categorias: string[] }) {
       <select
         value={get("categoria")}
         onChange={(e) => setParam("categoria", e.target.value)}
-        className="rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700"
+        className="rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-fg"
       >
         <option value="">Todas las categorías</option>
         {categorias.map((c) => (
@@ -106,7 +106,7 @@ export default function Filtros({ categorias }: { categorias: string[] }) {
         onKeyDown={(e) => {
           if (e.key === "Enter") setParam("q", (e.target as HTMLInputElement).value);
         }}
-        className="min-w-56 flex-1 rounded-lg border border-zinc-200 bg-white px-3 py-1.5 text-sm text-zinc-700"
+        className="min-w-56 flex-1 rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-fg"
       />
     </div>
   );

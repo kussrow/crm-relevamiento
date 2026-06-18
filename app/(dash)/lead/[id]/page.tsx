@@ -14,8 +14,8 @@ function Field({ label, value }: { label: string; value?: string | null }) {
   if (!value) return null;
   return (
     <div>
-      <dt className="text-xs uppercase tracking-wide text-zinc-400">{label}</dt>
-      <dd className="text-sm text-zinc-800">{value}</dd>
+      <dt className="text-xs uppercase tracking-wide text-faint">{label}</dt>
+      <dd className="text-sm text-fg">{value}</dd>
     </div>
   );
 }
@@ -33,16 +33,16 @@ export default async function LeadPage({
 
   return (
     <div className="mx-auto max-w-4xl p-6">
-      <Link href="/bandeja" className="mb-4 inline-block text-sm text-zinc-500 hover:text-zinc-800">
+      <Link href="/bandeja" className="mb-4 inline-block text-sm text-muted hover:text-fg">
         ← Volver a la bandeja
       </Link>
 
       {/* Encabezado */}
-      <div className="mb-4 rounded-lg border border-zinc-200 bg-white p-5">
+      <div className="mb-4 rounded-lg border border-border bg-card p-5">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <div className="mb-1 flex items-center gap-2">
-              <h1 className="text-lg font-semibold text-zinc-900">
+              <h1 className="text-lg font-semibold text-fg">
                 {lead.nombre || "Sin nombre"}
               </h1>
               <NegocioBadge value={lead.negocio} />
@@ -51,9 +51,9 @@ export default async function LeadPage({
                 <span className="text-xs font-medium text-red-500">Requiere atención</span>
               )}
             </div>
-            <div className="text-sm text-zinc-500">
+            <div className="text-sm text-muted">
               {lead.telefono} · {formatFecha(lead.fecha_mensaje)} ·{" "}
-              <span className="font-medium text-zinc-600">score {lead.score}</span>
+              <span className="font-medium text-muted">score {lead.score}</span>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -62,7 +62,7 @@ export default async function LeadPage({
                 href={wa}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white hover:bg-zinc-800"
+                className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-fg hover:bg-accent"
               >
                 Abrir WhatsApp
               </a>
@@ -71,8 +71,8 @@ export default async function LeadPage({
           </div>
         </div>
 
-        <div className="mt-4 border-t border-zinc-100 pt-4">
-          <div className="mb-2 text-xs uppercase tracking-wide text-zinc-400">
+        <div className="mt-4 border-t border-border pt-4">
+          <div className="mb-2 text-xs uppercase tracking-wide text-faint">
             Estado del lead
           </div>
           <EstadoSelector id={lead.id} current={lead.estado} />
@@ -86,40 +86,40 @@ export default async function LeadPage({
             <Conversacion negocio={lead.negocio} telefono={lead.telefono} />
           )}
 
-          <section className="rounded-lg border border-zinc-200 bg-white p-5">
-            <h2 className="mb-2 text-sm font-semibold text-zinc-700">
+          <section className="rounded-lg border border-border bg-card p-5">
+            <h2 className="mb-2 text-sm font-semibold text-fg">
               Mensaje original
-              <span className="ml-2 rounded bg-zinc-100 px-1.5 py-0.5 text-xs font-normal text-zinc-500">
+              <span className="ml-2 rounded bg-hover px-1.5 py-0.5 text-xs font-normal text-muted">
                 {lead.tipo_mensaje}
               </span>
             </h2>
-            <p className="whitespace-pre-wrap text-sm text-zinc-700">{lead.mensaje}</p>
+            <p className="whitespace-pre-wrap text-sm text-fg">{lead.mensaje}</p>
             {lead.pregunta && (
-              <p className="mt-3 border-t border-zinc-100 pt-3 text-sm">
-                <span className="text-zinc-400">Pregunta principal: </span>
-                <span className="font-medium text-zinc-700">{lead.pregunta}</span>
+              <p className="mt-3 border-t border-border pt-3 text-sm">
+                <span className="text-faint">Pregunta principal: </span>
+                <span className="font-medium text-fg">{lead.pregunta}</span>
               </p>
             )}
           </section>
 
           {lead.respuesta_sugerida && (
-            <section className="rounded-lg border border-zinc-200 bg-white p-5">
-              <h2 className="mb-2 text-sm font-semibold text-zinc-700">
+            <section className="rounded-lg border border-border bg-card p-5">
+              <h2 className="mb-2 text-sm font-semibold text-fg">
                 Respuesta sugerida
               </h2>
-              <p className="text-sm text-zinc-600">{lead.respuesta_sugerida}</p>
+              <p className="text-sm text-muted">{lead.respuesta_sugerida}</p>
             </section>
           )}
 
-          <section className="rounded-lg border border-zinc-200 bg-white p-5">
-            <h2 className="mb-3 text-sm font-semibold text-zinc-700">Notas de seguimiento</h2>
+          <section className="rounded-lg border border-border bg-card p-5">
+            <h2 className="mb-3 text-sm font-semibold text-fg">Notas de seguimiento</h2>
             <NotasEditor id={lead.id} initial={lead.notas || ""} />
           </section>
         </div>
 
         {/* Clasificación */}
-        <aside className="rounded-lg border border-zinc-200 bg-white p-5">
-          <h2 className="mb-3 text-sm font-semibold text-zinc-700">Clasificación IA</h2>
+        <aside className="rounded-lg border border-border bg-card p-5">
+          <h2 className="mb-3 text-sm font-semibold text-fg">Clasificación IA</h2>
           <dl className="space-y-3">
             <Field label="Categoría" value={lead.categoria} />
             <Field label="Subcategoría" value={lead.subcategoria} />

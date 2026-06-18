@@ -26,8 +26,8 @@ export default function EstadoSelector({
             onClick={() => startTransition(() => setEstadoAction(id, e))}
             className={`flex items-center gap-1.5 rounded-md border px-3 py-1 text-sm transition-colors disabled:opacity-50 ${
               active
-                ? "border-zinc-900 font-medium text-zinc-900"
-                : "border-zinc-200 text-zinc-400 hover:text-zinc-700"
+                ? "border-accent font-medium text-fg"
+                : "border-border text-faint hover:text-fg"
             }`}
           >
             <span className={`h-1.5 w-1.5 rounded-full ${info.dot}`} />

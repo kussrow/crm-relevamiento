@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import { LayoutDashboard, Inbox, PanelLeft } from "lucide-react";
 
 const links = [
-  { href: "/", label: "Tablero", icon: LayoutDashboard },
+  { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/bandeja", label: "Bandeja", icon: Inbox },
 ];
 

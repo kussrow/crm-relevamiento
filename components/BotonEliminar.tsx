@@ -2,9 +2,9 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Trash2 } from "lucide-react";
 import { deleteLeadAction } from "@/app/(dash)/lead/[id]/actions";
 
-// variant "full" → botón con texto (ficha); "compact" → ícono (fila de bandeja)
 export default function BotonEliminar({
   id,
   variant = "full",
@@ -32,9 +32,9 @@ export default function BotonEliminar({
         onClick={handle}
         disabled={pending}
         title="Eliminar lead"
-        className="rounded p-1 text-slate-300 transition-colors hover:bg-red-50 hover:text-red-500 disabled:opacity-50"
+        className="rounded-md p-1.5 text-faint transition-colors hover:bg-hover hover:text-red-500 disabled:opacity-50"
       >
-        {pending ? "…" : "🗑"}
+        <Trash2 className="h-4 w-4" />
       </button>
     );
   }
@@ -43,9 +43,10 @@ export default function BotonEliminar({
     <button
       onClick={handle}
       disabled={pending}
-      className="rounded-lg border border-red-200 px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50 disabled:opacity-50"
+      className="flex items-center gap-1.5 rounded-md border border-border px-3 py-2 text-sm font-medium text-muted transition-colors hover:border-red-300 hover:text-red-500 disabled:opacity-50"
     >
-      {pending ? "Eliminando…" : "🗑 Eliminar"}
+      <Trash2 className="h-4 w-4" />
+      {pending ? "Eliminando…" : "Eliminar"}
     </button>
   );
 }

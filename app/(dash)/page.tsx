@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { getMetrics, getPrioritarios } from "@/lib/leads";
-import { TEMP_INFO, ESTADO_INFO, NEGOCIO_INFO, timeAgo } from "@/lib/scoring";
+import { ESTADO_INFO, TEMP_INFO, NEGOCIO_INFO, timeAgo } from "@/lib/scoring";
 import { TemperaturaBadge, NegocioBadge } from "@/components/badges";
-import type { Temperatura, Estado, Negocio } from "@/lib/types";
+import Donut from "@/components/charts/Donut";
+import AreaChart from "@/components/charts/AreaChart";
+import type { Estado, Temperatura, Negocio } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
@@ -16,41 +18,43 @@ function Kpi({ label, value, hint }: { label: string; value: string | number; hi
   );
 }
 
-function BarRow({
-  label,
-  value,
-  max,
-  color,
-}: {
-  label: React.ReactNode;
-  value: number;
-  max: number;
-  color: string;
-}) {
-  const pct = max > 0 ? Math.round((value / max) * 100) : 0;
+function Card({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="flex items-center gap-3 text-sm">
-      <div className="w-32 shrink-0 truncate text-muted">{label}</div>
-      <div className="h-5 flex-1 overflow-hidden rounded bg-hover">
-        <div className={`h-full ${color}`} style={{ width: `${pct}%` }} />
-      </div>
-      <div className="w-8 shrink-0 text-right font-medium text-fg">{value}</div>
-    </div>
+    <section className="rounded-lg border border-border bg-card p-5">
+      <h2 className="mb-4 text-sm font-semibold text-fg">{title}</h2>
+      {children}
+    </section>
   );
 }
 
-export default async function TableroPage() {
+export default async function DashboardPage() {
   const [m, prioritarios] = await Promise.all([getMetrics(), getPrioritarios()]);
-  const maxDia = Math.max(1, ...m.porDia.map((d) => d.total));
   const maxCat = Math.max(1, ...m.porCategoria.map((c) => c.total));
-  const tempTotal = m.porTemperatura.reduce((a, b) => a + b.total, 0) || 1;
 
   const estadoOrder: Estado[] = ["nuevo", "contactado", "presupuesto", "ganado", "perdido"];
   const estadoMap = Object.fromEntries(m.porEstado.map((e) => [e.estado, e.total]));
+  const tempMap = Object.fromEntries(m.porTemperatura.map((t) => [t.temperatura, t.total]));
+  const negMap = Object.fromEntries(m.porNegocio.map((nn) => [nn.negocio, nn.total]));
+
+  const estadoSeg = estadoOrder.map((e) => ({
+    label: ESTADO_INFO[e].label,
+    value: estadoMap[e] ?? 0,
+    className: ESTADO_INFO[e].chart,
+  }));
+  const tempSeg = (["caliente", "tibio", "frio"] as Temperatura[]).map((t) => ({
+    label: TEMP_INFO[t].label,
+    value: tempMap[t] ?? 0,
+    className: TEMP_INFO[t].chart,
+  }));
+  const negSeg = (["piscinas", "vivero"] as Negocio[]).map((nn) => ({
+    label: NEGOCIO_INFO[nn].label,
+    value: negMap[nn] ?? 0,
+    className: NEGOCIO_INFO[nn].chart,
+  }));
 
   return (
     <div className="p-6">
-      <h1 className="mb-5 text-xl font-semibold text-fg">Tablero</h1>
+      <h1 className="mb-5 text-xl font-semibold text-fg">Dashboard</h1>
 
       <div className="mb-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Kpi label="Consultas totales" value={m.total} />
@@ -60,11 +64,7 @@ export default async function TableroPage() {
           hint={`${Math.round((m.requiereHumano / (m.total || 1)) * 100)}% del total`}
         />
         {m.porNegocio.map((n) => (
-          <Kpi
-            key={n.negocio}
-            label={NEGOCIO_INFO[n.negocio as Negocio]?.label ?? n.negocio}
-            value={n.total}
-          />
+          <Kpi key={n.negocio} label={NEGOCIO_INFO[n.negocio as Negocio]?.label ?? n.negocio} value={n.total} />
         ))}
       </div>
 
@@ -77,28 +77,21 @@ export default async function TableroPage() {
           </Link>
         </div>
         {prioritarios.length === 0 ? (
-          <p className="text-sm text-faint">No hay leads prioritarios pendientes. 🎉</p>
+          <p className="text-sm text-faint">No hay leads prioritarios pendientes.</p>
         ) : (
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
             {prioritarios.map((lead) => (
               <Link
                 key={lead.id}
                 href={`/lead/${lead.id}`}
-                className="rounded-lg border border-border p-3 transition-colors hover:border-border hover:bg-hover"
+                className="rounded-lg border border-border p-3 transition-colors hover:bg-hover"
               >
                 <div className="mb-1 flex items-center gap-2">
                   <TemperaturaBadge value={lead.temperatura} />
                   <NegocioBadge value={lead.negocio} />
-                  {lead.requiere_humano && (
-                    <span className="text-[10px] font-medium text-red-500">requiere atención</span>
-                  )}
                 </div>
-                <div className="text-sm font-medium text-fg">
-                  {lead.nombre || "Sin nombre"}
-                </div>
-                <div className="line-clamp-1 text-xs text-muted">
-                  {lead.resumen || lead.mensaje}
-                </div>
+                <div className="text-sm font-medium text-fg">{lead.nombre || "Sin nombre"}</div>
+                <div className="line-clamp-1 text-xs text-muted">{lead.resumen || lead.mensaje}</div>
                 <div className="mt-1 text-[11px] text-faint">
                   {lead.categoria} · {timeAgo(lead.fecha_mensaje)}
                 </div>
@@ -108,91 +101,38 @@ export default async function TableroPage() {
         )}
       </section>
 
-      <div className="grid gap-4 lg:grid-cols-2">
-        {/* Temperatura */}
-        <section className="rounded-lg border border-border bg-card p-5">
-          <h2 className="mb-4 text-sm font-semibold text-fg">Calificación de leads</h2>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <Card title="Consultas por día">
+            <AreaChart points={m.porDia.map((d) => ({ label: d.dia, value: d.total }))} />
+          </Card>
+        </div>
+        <Card title="Por estado">
+          <Donut segments={estadoSeg} />
+        </Card>
+        <Card title="Calificación de leads">
+          <Donut segments={tempSeg} />
+        </Card>
+        <Card title="Por negocio">
+          <Donut segments={negSeg} />
+        </Card>
+        <Card title="Top categorías">
           <div className="space-y-2">
-            {(["caliente", "tibio", "frio"] as Temperatura[]).map((t) => {
-              const val = m.porTemperatura.find((x) => x.temperatura === t)?.total ?? 0;
+            {m.porCategoria.map((c) => {
+              const pct = Math.round((c.total / maxCat) * 100);
               return (
-                <BarRow
-                  key={t}
-                  label={
-                    <span className="flex items-center gap-1.5">
-                      <span className={`h-1.5 w-1.5 rounded-full ${TEMP_INFO[t].dot}`} />
-                      {TEMP_INFO[t].label}
-                    </span>
-                  }
-                  value={val}
-                  max={tempTotal}
-                  color={
-                    t === "caliente"
-                      ? "bg-red-400"
-                      : t === "tibio"
-                      ? "bg-amber-400"
-                      : "bg-sky-400"
-                  }
-                />
+                <div key={c.categoria} className="flex items-center gap-3 text-sm">
+                  <div className="w-28 shrink-0 truncate text-muted">{c.categoria}</div>
+                  <div className="h-2 flex-1 overflow-hidden rounded-full bg-hover">
+                    <div className="h-full rounded-full bg-fg/70" style={{ width: `${pct}%` }} />
+                  </div>
+                  <div className="w-6 shrink-0 text-right text-xs font-medium text-fg">{c.total}</div>
+                </div>
               );
             })}
+            {m.porCategoria.length === 0 && <p className="text-sm text-faint">Sin datos.</p>}
           </div>
-        </section>
-
-        {/* Pipeline */}
-        <section className="rounded-lg border border-border bg-card p-5">
-          <h2 className="mb-4 text-sm font-semibold text-fg">Pipeline (estados)</h2>
-          <div className="space-y-2">
-            {estadoOrder.map((e) => (
-              <BarRow
-                key={e}
-                label={ESTADO_INFO[e].label}
-                value={estadoMap[e] ?? 0}
-                max={m.total || 1}
-                color={ESTADO_INFO[e].dot}
-              />
-            ))}
-          </div>
-        </section>
-
-        {/* Top categorías */}
-        <section className="rounded-lg border border-border bg-card p-5">
-          <h2 className="mb-4 text-sm font-semibold text-fg">Top categorías</h2>
-          <div className="space-y-2">
-            {m.porCategoria.map((c) => (
-              <BarRow
-                key={c.categoria}
-                label={c.categoria}
-                value={c.total}
-                max={maxCat}
-                color="bg-muted"
-              />
-            ))}
-            {m.porCategoria.length === 0 && (
-              <p className="text-sm text-faint">Sin datos.</p>
-            )}
-          </div>
-        </section>
-
-        {/* Por día */}
-        <section className="rounded-lg border border-border bg-card p-5">
-          <h2 className="mb-4 text-sm font-semibold text-fg">Consultas por día</h2>
-          <div className="flex h-40 items-end gap-1.5">
-            {m.porDia.map((d) => (
-              <div key={d.dia} className="flex flex-1 flex-col items-center gap-1">
-                <div
-                  className="w-full rounded-t bg-accent"
-                  style={{ height: `${Math.round((d.total / maxDia) * 100)}%` }}
-                  title={`${d.dia}: ${d.total}`}
-                />
-                <span className="text-[10px] text-faint">{d.dia.slice(8, 10)}</span>
-              </div>
-            ))}
-            {m.porDia.length === 0 && (
-              <p className="text-sm text-faint">Sin datos.</p>
-            )}
-          </div>
-        </section>
+        </Card>
       </div>
     </div>
   );

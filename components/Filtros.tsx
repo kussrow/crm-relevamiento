@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback } from "react";
+import { TEMP_INFO } from "@/lib/scoring";
 
 const NEGOCIOS = [
   { value: "", label: "Todos" },
@@ -10,10 +11,10 @@ const NEGOCIOS = [
 ];
 
 const TEMPS = [
-  { value: "", label: "Todas" },
-  { value: "caliente", label: "Caliente" },
-  { value: "tibio", label: "Tibio" },
-  { value: "frio", label: "Frío" },
+  { value: "", label: "Todas", icon: null, color: "", badge: "" },
+  { value: "caliente", ...TEMP_INFO.caliente },
+  { value: "tibio", ...TEMP_INFO.tibio },
+  { value: "frio", ...TEMP_INFO.frio },
 ];
 
 const ESTADOS = [
@@ -63,21 +64,31 @@ export default function Filtros({ categorias }: { categorias: string[] }) {
       </div>
 
       <div className="flex gap-1.5">
-        {TEMPS.map((t) => (
-          <button
-            key={t.value}
-            onClick={() => setParam("temperatura", t.value)}
-            className={chip(get("temperatura") === t.value)}
-          >
-            {t.label}
-          </button>
-        ))}
+        {TEMPS.map((t) => {
+          const active = get("temperatura") === t.value;
+          const Icon = t.icon;
+          const cls = active
+            ? t.value
+              ? `${t.badge} border border-transparent`
+              : "border border-accent bg-accent text-accent-fg"
+            : "border border-border bg-card text-muted hover:bg-hover";
+          return (
+            <button
+              key={t.value}
+              onClick={() => setParam("temperatura", t.value)}
+              className={`flex items-center gap-1 rounded-md px-3 py-1 text-sm transition-colors ${cls}`}
+            >
+              {Icon && <Icon className={`h-3.5 w-3.5 ${active ? "" : t.color}`} />}
+              {t.label}
+            </button>
+          );
+        })}
       </div>
 
       <select
         value={get("estado")}
         onChange={(e) => setParam("estado", e.target.value)}
-        className="rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-fg"
+        className="rounded-md border border-border bg-card px-3 py-1.5 text-sm text-fg"
       >
         {ESTADOS.map((e) => (
           <option key={e.value} value={e.value}>
@@ -89,7 +100,7 @@ export default function Filtros({ categorias }: { categorias: string[] }) {
       <select
         value={get("categoria")}
         onChange={(e) => setParam("categoria", e.target.value)}
-        className="rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-fg"
+        className="rounded-md border border-border bg-card px-3 py-1.5 text-sm text-fg"
       >
         <option value="">Todas las categorías</option>
         {categorias.map((c) => (
@@ -106,7 +117,7 @@ export default function Filtros({ categorias }: { categorias: string[] }) {
         onKeyDown={(e) => {
           if (e.key === "Enter") setParam("q", (e.target as HTMLInputElement).value);
         }}
-        className="min-w-56 flex-1 rounded-lg border border-border bg-card px-3 py-1.5 text-sm text-fg"
+        className="min-w-56 flex-1 rounded-md border border-border bg-card px-3 py-1.5 text-sm text-fg"
       />
     </div>
   );

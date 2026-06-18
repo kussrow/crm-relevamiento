@@ -1,23 +1,52 @@
+import { Flame, Thermometer, Snowflake, type LucideIcon } from "lucide-react";
 import type { Temperatura, Estado, Negocio } from "./types";
 
-// Estilo minimalista: solo un punto de color + texto neutro.
-export const TEMP_INFO: Record<Temperatura, { label: string; dot: string }> = {
-  caliente: { label: "Caliente", dot: "bg-red-500" },
-  tibio: { label: "Tibio", dot: "bg-amber-400" },
-  frio: { label: "Frío", dot: "bg-zinc-300" },
+// Temperatura: color + icono monocromático + pill tintada.
+export const TEMP_INFO: Record<
+  Temperatura,
+  { label: string; icon: LucideIcon; color: string; badge: string; dot: string; chart: string }
+> = {
+  caliente: {
+    label: "Caliente",
+    icon: Flame,
+    color: "text-red-500",
+    badge: "bg-red-500/10 text-red-600 dark:text-red-400",
+    dot: "bg-red-500",
+    chart: "text-red-500",
+  },
+  tibio: {
+    label: "Tibio",
+    icon: Thermometer,
+    color: "text-amber-500",
+    badge: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    dot: "bg-amber-400",
+    chart: "text-amber-400",
+  },
+  frio: {
+    label: "Frío",
+    icon: Snowflake,
+    color: "text-sky-500",
+    badge: "bg-sky-500/10 text-sky-600 dark:text-sky-400",
+    dot: "bg-sky-400",
+    chart: "text-sky-400",
+  },
 };
 
-export const ESTADO_INFO: Record<Estado, { label: string; dot: string }> = {
-  nuevo: { label: "Nuevo", dot: "bg-blue-500" },
-  contactado: { label: "Contactado", dot: "bg-violet-500" },
-  presupuesto: { label: "Presupuesto", dot: "bg-amber-500" },
-  ganado: { label: "Ganado", dot: "bg-emerald-500" },
-  perdido: { label: "Perdido", dot: "bg-zinc-400" },
+// Estado: pill con un poco de color.
+export const ESTADO_INFO: Record<
+  Estado,
+  { label: string; badge: string; dot: string; chart: string }
+> = {
+  nuevo: { label: "Nuevo", badge: "bg-blue-500/10 text-blue-600 dark:text-blue-400", dot: "bg-blue-500", chart: "text-blue-500" },
+  contactado: { label: "Contactado", badge: "bg-violet-500/10 text-violet-600 dark:text-violet-400", dot: "bg-violet-500", chart: "text-violet-500" },
+  presupuesto: { label: "Presupuesto", badge: "bg-amber-500/10 text-amber-600 dark:text-amber-400", dot: "bg-amber-500", chart: "text-amber-500" },
+  ganado: { label: "Ganado", badge: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400", dot: "bg-emerald-500", chart: "text-emerald-500" },
+  perdido: { label: "Perdido", badge: "bg-zinc-500/10 text-zinc-500 dark:text-zinc-400", dot: "bg-zinc-400", chart: "text-zinc-400" },
 };
 
-export const NEGOCIO_INFO: Record<Negocio, { label: string; dot: string }> = {
-  piscinas: { label: "Piscinas", dot: "bg-sky-500" },
-  vivero: { label: "Vivero", dot: "bg-green-500" },
+export const NEGOCIO_INFO: Record<Negocio, { label: string; dot: string; chart: string }> = {
+  piscinas: { label: "Piscinas", dot: "bg-sky-500", chart: "text-sky-500" },
+  vivero: { label: "Vivero", dot: "bg-green-500", chart: "text-green-500" },
 };
 
 export function whatsappLink(telefono: string | null): string | null {

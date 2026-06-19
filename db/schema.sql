@@ -50,3 +50,8 @@ CREATE INDEX IF NOT EXISTS idx_leads_estado     ON leads (estado);
 CREATE INDEX IF NOT EXISTS idx_leads_categoria  ON leads (categoria);
 CREATE INDEX IF NOT EXISTS idx_leads_fecha      ON leads (fecha_mensaje DESC);
 CREATE INDEX IF NOT EXISTS idx_leads_score      ON leads (score DESC);
+
+CREATE TABLE IF NOT EXISTS config (
+  key   TEXT PRIMARY KEY,
+  value TEXT
+);

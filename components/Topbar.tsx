@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Bell, Sun, Moon, User, Settings, LogOut } from "lucide-react";
+import BotControl from "@/components/BotControl";
 
 type Notif = { id: number; nombre: string | null; negocio: string; categoria: string | null };
 
@@ -41,6 +42,7 @@ export default function Topbar() {
       ref={ref}
       className="flex h-14 items-center justify-end gap-1 border-b border-border bg-card px-4"
     >
+      <BotControl />
       <button
         onClick={toggleTheme}
         className="rounded-md p-2 text-muted transition-colors hover:bg-hover hover:text-fg"

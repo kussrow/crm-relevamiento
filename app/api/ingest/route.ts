@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { insertLead, type LeadInput } from "@/lib/leads";
+import { getBot } from "@/lib/config";
+import { sendMessage } from "@/lib/evolution";
 
 // Normaliza el payload aceptando tanto los nombres del CRM como los
 // que produce el nodo "Parsear Resultado" de n8n (piscinas y vivero).
@@ -53,7 +55,24 @@ export async function POST(request: Request) {
   }
 
   try {
-    const id = await insertLead(normalize(body));
+    const data = normalize(body);
+    const id = await insertLead(data);
+
+    // Bot automático: si está activo para ese negocio, responde por WhatsApp.
+    try {
+      if (
+        data.negocio &&
+        data.telefono &&
+        data.respuesta_sugerida &&
+        (await getBot(data.negocio))
+      ) {
+        const reply = `${data.respuesta_sugerida}\n\n— Respuesta automática. Un asesor te contacta a la brevedad.`;
+        await sendMessage(data.negocio, data.telefono, reply);
+      }
+    } catch (e) {
+      console.error("[crm] error en respuesta automática:", e);
+    }
+
     return NextResponse.json({ ok: true, id }, { status: 201 });
   } catch (e) {
     console.error("[crm] error insertando lead:", e);

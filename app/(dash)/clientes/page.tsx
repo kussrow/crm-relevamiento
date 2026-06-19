@@ -3,6 +3,7 @@ import { Search, Users } from "lucide-react";
 import { getClientesConDatos } from "@/lib/leads";
 import { NegocioBadge } from "@/components/badges";
 import AccionesCliente from "@/components/AccionesCliente";
+import NuevoCliente from "@/components/NuevoCliente";
 import type { Negocio } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -35,16 +36,19 @@ export default async function ClientesPage({
             {clientes.length} cliente{clientes.length === 1 ? "" : "s"} con datos cargados
           </p>
         </div>
-        <form className="relative" action="/clientes">
-          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-faint" />
-          <input
-            type="search"
-            name="q"
-            defaultValue={sp.q ?? ""}
-            placeholder="Buscar por nombre, CUIT, teléfono…"
-            className="w-72 rounded-md border border-border bg-card py-2 pl-9 pr-3 text-sm text-fg outline-none focus:border-accent"
-          />
-        </form>
+        <div className="flex items-center gap-3">
+          <form className="relative" action="/clientes">
+            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-faint" />
+            <input
+              type="search"
+              name="q"
+              defaultValue={sp.q ?? ""}
+              placeholder="Buscar por nombre, CUIT, teléfono…"
+              className="w-72 rounded-md border border-border bg-card py-2 pl-9 pr-3 text-sm text-fg outline-none focus:border-accent"
+            />
+          </form>
+          <NuevoCliente />
+        </div>
       </div>
 
       <div className="overflow-hidden rounded-lg border border-border bg-card">

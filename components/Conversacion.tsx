@@ -103,6 +103,12 @@ export default function Conversacion({
                 >
                   🎤 Audio
                 </audio>
+              ) : m.tipo === "imagen" && m.mediaId ? (
+                <ImagenMensaje
+                  negocio={negocio}
+                  mediaId={m.mediaId}
+                  caption={m.text.replace(/^🖼️\s*/, "")}
+                />
               ) : (
                 m.text
               )}
@@ -147,5 +153,38 @@ export default function Conversacion({
         </div>
       </div>
     </section>
+  );
+}
+
+function ImagenMensaje({
+  negocio,
+  mediaId,
+  caption,
+}: {
+  negocio: string;
+  mediaId: string;
+  caption: string;
+}) {
+  const [error, setError] = useState(false);
+  const src = `/api/audio?negocio=${encodeURIComponent(negocio)}&id=${encodeURIComponent(mediaId)}`;
+  const tieneCaption = caption && caption !== "Imagen";
+
+  if (error) {
+    return <span>🖼️ {tieneCaption ? caption : "Imagen"}</span>;
+  }
+
+  return (
+    <div className="space-y-1">
+      <a href={src} target="_blank" rel="noopener noreferrer">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={src}
+          alt={tieneCaption ? caption : "Imagen"}
+          onError={() => setError(true)}
+          className="max-h-64 w-56 max-w-full cursor-pointer rounded-lg object-cover"
+        />
+      </a>
+      {tieneCaption && <div>{caption}</div>}
+    </div>
   );
 }

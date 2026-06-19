@@ -1,4 +1,14 @@
-import { Flame, Thermometer, Snowflake, type LucideIcon } from "lucide-react";
+import {
+  Flame,
+  Thermometer,
+  Snowflake,
+  MapPin,
+  Users,
+  Phone,
+  Repeat,
+  Tag,
+  type LucideIcon,
+} from "lucide-react";
 import type {
   Temperatura,
   Estado,
@@ -55,40 +65,50 @@ export const NEGOCIO_INFO: Record<Negocio, { label: string; dot: string; chart: 
   vivero: { label: "Vivero", dot: "bg-green-500", chart: "text-green-500" },
 };
 
-// Tipos de evento de la agenda: color por tipo.
+// Tipos de evento de la agenda: color + icono por tipo.
 export const EVENTO_INFO: Record<
   TipoEvento,
-  { label: string; dot: string; badge: string; text: string }
+  { label: string; dot: string; badge: string; text: string; icon: LucideIcon; solid: string }
 > = {
   visita: {
     label: "Visita",
     dot: "bg-emerald-500",
     badge: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
     text: "text-emerald-600 dark:text-emerald-400",
+    icon: MapPin,
+    solid: "bg-emerald-500 text-white",
   },
   reunion: {
     label: "Reunión",
     dot: "bg-violet-500",
     badge: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
     text: "text-violet-600 dark:text-violet-400",
+    icon: Users,
+    solid: "bg-violet-500 text-white",
   },
   llamada: {
     label: "Llamada",
     dot: "bg-blue-500",
     badge: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
     text: "text-blue-600 dark:text-blue-400",
+    icon: Phone,
+    solid: "bg-blue-500 text-white",
   },
   seguimiento: {
     label: "Seguimiento",
     dot: "bg-amber-500",
     badge: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
     text: "text-amber-600 dark:text-amber-400",
+    icon: Repeat,
+    solid: "bg-amber-500 text-white",
   },
   otro: {
     label: "Otro",
     dot: "bg-zinc-400",
     badge: "bg-zinc-500/10 text-zinc-500 dark:text-zinc-400",
     text: "text-zinc-500 dark:text-zinc-400",
+    icon: Tag,
+    solid: "bg-zinc-500 text-white",
   },
 };
 

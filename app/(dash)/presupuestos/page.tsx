@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, FileText } from "lucide-react";
 import { getPresupuestos } from "@/lib/presupuestos";
 import PresupuestosTabla from "@/components/PresupuestosTabla";
 
@@ -12,7 +12,9 @@ export default async function PresupuestosPage() {
     <div className="p-6">
       <div className="mb-5 flex items-center justify-between">
         <div>
-          <h1 className="text-xl font-semibold text-fg">Presupuestos</h1>
+          <h1 className="flex items-center gap-2 text-xl font-semibold text-fg">
+            <FileText className="h-5 w-5 text-accent" /> Presupuestos
+          </h1>
           <p className="text-sm text-muted">{presupuestos.length} en total</p>
         </div>
         <Link

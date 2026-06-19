@@ -89,7 +89,14 @@ export async function fetchMessages(
         fromMe: !!m.key?.fromMe,
         text: c.text,
         tipo: c.tipo,
-        mediaId: c.tipo === "audio" ? m.key?.id : undefined,
+        // Guardamos la key.id para poder descargar el archivo (audio, imagen, etc.).
+        mediaId:
+          c.tipo === "audio" ||
+          c.tipo === "imagen" ||
+          c.tipo === "video" ||
+          c.tipo === "documento"
+            ? m.key?.id
+            : undefined,
         timestamp: Number(m.messageTimestamp) || 0,
       };
     })

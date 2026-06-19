@@ -145,6 +145,33 @@ export async function getClientesConDatos(q?: string): Promise<Lead[]> {
   );
 }
 
+// Alta manual de un cliente que llega al showroom de forma presencial:
+// crea un lead "cargado a mano" con sus datos personales (y facturación opcional).
+export async function crearClientePresencial(
+  negocio: Negocio,
+  personales: DatosPersonales,
+  facturacion?: DatosFacturacion
+): Promise<number> {
+  const nombre =
+    [personales.nombre, personales.apellido].filter(Boolean).join(" ").trim() ||
+    null;
+  const rows = await query<{ id: number }>(
+    `INSERT INTO leads (negocio, nombre, telefono, tipo_mensaje, estado,
+       datos_personales, datos_facturacion)
+     VALUES ($1,$2,$3,'presencial','contactado',$4,$5) RETURNING id`,
+    [
+      negocio,
+      nombre,
+      personales.telefono || null,
+      JSON.stringify(personales),
+      facturacion && Object.keys(facturacion).length
+        ? JSON.stringify(facturacion)
+        : null,
+    ]
+  );
+  return rows[0].id;
+}
+
 export interface LeadInput {
   negocio?: string;
   fecha_mensaje?: string;

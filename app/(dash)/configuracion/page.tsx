@@ -1,3 +1,5 @@
+import { Settings } from "lucide-react";
+
 export const dynamic = "force-dynamic";
 
 function Row({ label, value }: { label: string; value: React.ReactNode }) {
@@ -12,7 +14,9 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 export default function ConfiguracionPage() {
   return (
     <div className="mx-auto max-w-2xl p-6">
-      <h1 className="mb-5 text-xl font-semibold text-fg">Configuración</h1>
+      <h1 className="mb-5 flex items-center gap-2 text-xl font-semibold text-fg">
+        <Settings className="h-5 w-5 text-accent" /> Configuración
+      </h1>
 
       <section className="mb-4 rounded-lg border border-border bg-card p-5">
         <h2 className="mb-2 text-sm font-semibold text-fg">Cuenta</h2>

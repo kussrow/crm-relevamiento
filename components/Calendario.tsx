@@ -43,14 +43,22 @@ function fechaLarga(iso: string) {
   });
 }
 
+export interface ClienteOpcion {
+  id: number;
+  nombre: string;
+  telefono: string;
+}
+
 export default function Calendario({
   year,
   month,
   eventos,
+  clientes = [],
 }: {
   year: number;
   month: number; // 0-based
   eventos: Evento[];
+  clientes?: ClienteOpcion[];
 }) {
   const router = useRouter();
   const [, start] = useTransition();
@@ -67,8 +75,24 @@ export default function Calendario({
   const [fecha, setFecha] = useState("");
   const [cliente, setCliente] = useState("");
   const [telefono, setTelefono] = useState("");
+  const [leadId, setLeadId] = useState<number | null>(null);
   const [notas, setNotas] = useState("");
   const [hecho, setHecho] = useState(false);
+
+  // Al elegir/escribir un cliente: si coincide con uno guardado, autocompletamos
+  // su teléfono y lo vinculamos (lead_id).
+  const onClienteChange = (nombre: string) => {
+    setCliente(nombre);
+    const match = clientes.find(
+      (c) => c.nombre.toLowerCase() === nombre.trim().toLowerCase()
+    );
+    if (match) {
+      setLeadId(match.id);
+      if (match.telefono) setTelefono(match.telefono);
+    } else {
+      setLeadId(null);
+    }
+  };
 
   const todosActivos = activos.size === TIPOS_EVENTO.length;
   const toggleFiltro = (t: TipoEvento) =>
@@ -115,6 +139,7 @@ export default function Calendario({
     setFecha(dia ? `${dia}T09:00` : "");
     setCliente("");
     setTelefono("");
+    setLeadId(null);
     setNotas("");
     setHecho(false);
     setModalOpen(true);
@@ -127,6 +152,7 @@ export default function Calendario({
     setFecha(e.fecha);
     setCliente(e.cliente ?? "");
     setTelefono(e.telefono ?? "");
+    setLeadId(e.lead_id ?? null);
     setNotas(e.notas ?? "");
     setHecho(e.hecho);
     setModalOpen(true);
@@ -134,7 +160,7 @@ export default function Calendario({
 
   const guardar = () => {
     if (!titulo.trim() || !fecha) return;
-    const data = { tipo, titulo, fecha, cliente, telefono, notas };
+    const data = { tipo, titulo, fecha, cliente, telefono, notas, lead_id: leadId };
     start(async () => {
       if (editId) await actualizarEventoAction(editId, data);
       else await crearEventoAction(data);
@@ -358,17 +384,33 @@ export default function Calendario({
               </button>
             </div>
             <div className="space-y-3">
-              <select
-                className={`${inputCls} w-full`}
-                value={tipo}
-                onChange={(e) => setTipo(e.target.value as TipoEvento)}
-              >
-                {TIPOS_EVENTO.map((t) => (
-                  <option key={t} value={t}>
-                    {EVENTO_INFO[t].label}
-                  </option>
-                ))}
-              </select>
+              <div>
+                <div className="mb-1.5 text-xs uppercase tracking-wide text-faint">
+                  Tipo de evento
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {TIPOS_EVENTO.map((t) => {
+                    const info = EVENTO_INFO[t];
+                    const Icon = info.icon;
+                    const active = tipo === t;
+                    return (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setTipo(t)}
+                        className={`flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-sm font-medium transition-colors ${
+                          active
+                            ? `border-transparent ${info.solid}`
+                            : `border-border ${info.text} hover:bg-hover`
+                        }`}
+                      >
+                        <Icon className="h-4 w-4" />
+                        {info.label}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
               <input
                 className={`${inputCls} w-full`}
                 placeholder="Título (ej. Visita a obra)"
@@ -386,9 +428,17 @@ export default function Calendario({
                 <input
                   className={inputCls}
                   placeholder="Cliente"
+                  list="clientes-guardados"
                   value={cliente}
-                  onChange={(e) => setCliente(e.target.value)}
+                  onChange={(e) => onClienteChange(e.target.value)}
                 />
+                <datalist id="clientes-guardados">
+                  {clientes.map((c) => (
+                    <option key={c.id} value={c.nombre}>
+                      {c.telefono}
+                    </option>
+                  ))}
+                </datalist>
                 <input
                   className={inputCls}
                   placeholder="Teléfono"

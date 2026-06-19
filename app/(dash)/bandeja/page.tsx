@@ -6,7 +6,7 @@ import BandejaKanban from "@/components/BandejaKanban";
 import { TemperaturaBadge, EstadoBadge, NegocioBadge } from "@/components/badges";
 import BotonEliminar from "@/components/BotonEliminar";
 import { timeAgo } from "@/lib/scoring";
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Inbox } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -34,7 +34,9 @@ export default async function BandejaPage({
     <div className="p-6">
       <div className="mb-5 flex items-start justify-between gap-4">
         <div>
-          <h1 className="text-xl font-semibold text-fg">Bandeja de clientes</h1>
+          <h1 className="flex items-center gap-2 text-xl font-semibold text-fg">
+            <Inbox className="h-5 w-5 text-accent" /> Bandeja de clientes
+          </h1>
           <p className="text-sm text-muted">
             {clientes.length} cliente{clientes.length === 1 ? "" : "s"} ·{" "}
             {vista === "kanban" ? "tablero por estado" : "ordenados por prioridad"}

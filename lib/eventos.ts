@@ -52,8 +52,17 @@ export async function createEvento(d: EventoInput): Promise<number> {
 export async function updateEvento(id: number, d: EventoInput): Promise<void> {
   await query(
     `UPDATE eventos SET tipo=$1, titulo=$2, fecha=$3, cliente=$4, telefono=$5,
-       notas=$6, updated_at=now() WHERE id=$7`,
-    [d.tipo, d.titulo, d.fecha, d.cliente ?? null, d.telefono ?? null, d.notas ?? null, id]
+       notas=$6, lead_id=$7, updated_at=now() WHERE id=$8`,
+    [
+      d.tipo,
+      d.titulo,
+      d.fecha,
+      d.cliente ?? null,
+      d.telefono ?? null,
+      d.notas ?? null,
+      d.lead_id ?? null,
+      id,
+    ]
   );
 }
 

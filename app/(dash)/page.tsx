@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { MessageSquare, TriangleAlert, Waves, Sprout, type LucideIcon } from "lucide-react";
+import { MessageSquare, TriangleAlert, Waves, Sprout, LayoutDashboard, type LucideIcon } from "lucide-react";
 import { getMetrics, getPrioritarios } from "@/lib/leads";
 import { ESTADO_INFO, TEMP_INFO, NEGOCIO_INFO, timeAgo } from "@/lib/scoring";
 import { TemperaturaBadge, NegocioBadge } from "@/components/badges";
@@ -79,7 +79,9 @@ export default async function DashboardPage() {
 
   return (
     <div className="p-6">
-      <h1 className="mb-5 text-xl font-semibold text-fg">Dashboard</h1>
+      <h1 className="mb-5 flex items-center gap-2 text-xl font-semibold text-fg">
+        <LayoutDashboard className="h-5 w-5 text-accent" /> Dashboard
+      </h1>
 
       <div className="mb-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Kpi label="Consultas totales" value={m.total} icon={MessageSquare} color="text-blue-500" />

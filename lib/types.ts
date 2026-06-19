@@ -48,3 +48,31 @@ export const ESTADOS: Estado[] = [
   "ganado",
   "perdido",
 ];
+
+export type EstadoPresupuesto = "borrador" | "enviado" | "aceptado" | "rechazado";
+export const ESTADOS_PRESUPUESTO: EstadoPresupuesto[] = [
+  "borrador",
+  "enviado",
+  "aceptado",
+  "rechazado",
+];
+
+export interface PresupuestoItem {
+  descripcion: string;
+  cantidad: number;
+  precio: number;
+}
+
+export interface Presupuesto {
+  id: number;
+  negocio: string | null;
+  cliente: string | null;
+  telefono: string | null;
+  lead_id: number | null;
+  estado: EstadoPresupuesto;
+  items: PresupuestoItem[];
+  notas: string | null;
+  total: number;
+  created_at: string;
+  updated_at: string;
+}

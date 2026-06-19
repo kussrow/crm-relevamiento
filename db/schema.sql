@@ -55,3 +55,17 @@ CREATE TABLE IF NOT EXISTS config (
   key   TEXT PRIMARY KEY,
   value TEXT
 );
+
+CREATE TABLE IF NOT EXISTS presupuestos (
+  id         BIGSERIAL PRIMARY KEY,
+  negocio    TEXT,
+  cliente    TEXT,
+  telefono   TEXT,
+  lead_id    BIGINT,
+  estado     TEXT NOT NULL DEFAULT 'borrador',
+  items      JSONB NOT NULL DEFAULT '[]'::jsonb,
+  notas      TEXT,
+  total      NUMERIC NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);

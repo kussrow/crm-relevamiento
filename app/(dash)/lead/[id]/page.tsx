@@ -67,6 +67,14 @@ export default async function LeadPage({
                 Abrir WhatsApp
               </a>
             )}
+            <Link
+              href={`/presupuestos/nuevo?lead=${lead.id}&cliente=${encodeURIComponent(
+                lead.nombre || ""
+              )}&telefono=${encodeURIComponent(lead.telefono || "")}&negocio=${lead.negocio}`}
+              className="rounded-md border border-border px-4 py-2 text-sm font-medium text-muted hover:bg-hover hover:text-fg"
+            >
+              Crear presupuesto
+            </Link>
             <BotonEliminar id={lead.id} redirectTo="/bandeja" />
           </div>
         </div>

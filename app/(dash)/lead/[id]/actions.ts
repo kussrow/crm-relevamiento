@@ -13,6 +13,7 @@ import type { Estado, DatosPersonales, DatosFacturacion } from "@/lib/types";
 export async function deleteLeadAction(id: number) {
   await deleteLead(id);
   revalidatePath("/bandeja");
+  revalidatePath("/clientes");
   revalidatePath("/");
 }
 

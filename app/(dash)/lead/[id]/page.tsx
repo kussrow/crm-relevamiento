@@ -88,28 +88,41 @@ export default async function LeadPage({
         </div>
       </div>
 
-      {/* Datos cargados a mano: personales y facturación (separados) */}
-      <div className="mb-4">
-        <DatosCliente
-          id={lead.id}
-          personales={lead.datos_personales}
-          facturacion={lead.datos_facturacion}
-          fallback={{
-            nombre: lead.nombre,
-            telefono: lead.telefono,
-            localidad: lead.ciudad,
-            provincia: lead.provincia,
-          }}
-        />
-      </div>
+      {/* Chat + datos del cliente (con solapas) a la par */}
+      {lead.telefono ? (
+        <div className="mb-4 grid gap-4 lg:grid-cols-2">
+          <Conversacion negocio={lead.negocio} telefono={lead.telefono} />
+          <DatosCliente
+            id={lead.id}
+            personales={lead.datos_personales}
+            facturacion={lead.datos_facturacion}
+            fallback={{
+              nombre: lead.nombre,
+              telefono: lead.telefono,
+              localidad: lead.ciudad,
+              provincia: lead.provincia,
+            }}
+          />
+        </div>
+      ) : (
+        <div className="mb-4">
+          <DatosCliente
+            id={lead.id}
+            personales={lead.datos_personales}
+            facturacion={lead.datos_facturacion}
+            fallback={{
+              nombre: lead.nombre,
+              telefono: lead.telefono,
+              localidad: lead.ciudad,
+              provincia: lead.provincia,
+            }}
+          />
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-3">
-        {/* Conversación + mensaje + notas */}
+        {/* Mensaje + notas */}
         <div className="space-y-4 md:col-span-2">
-          {lead.telefono && (
-            <Conversacion negocio={lead.negocio} telefono={lead.telefono} />
-          )}
-
           <section className="rounded-lg border border-border bg-card p-5">
             <h2 className="mb-2 text-sm font-semibold text-fg">
               Mensaje original

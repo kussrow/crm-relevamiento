@@ -94,7 +94,18 @@ export default function Conversacion({
                   : "rounded-bl-sm border border-border bg-card text-fg"
               }`}
             >
-              {m.text}
+              {m.tipo === "audio" && m.mediaId ? (
+                <audio
+                  controls
+                  preload="none"
+                  src={`/api/audio?negocio=${encodeURIComponent(negocio)}&id=${encodeURIComponent(m.mediaId)}`}
+                  className="w-56 max-w-full"
+                >
+                  🎤 Audio
+                </audio>
+              ) : (
+                m.text
+              )}
               <div className={`mt-0.5 text-[10px] ${m.fromMe ? "text-faint" : "text-faint"}`}>
                 {m.timestamp
                   ? new Date(m.timestamp * 1000).toLocaleString("es-AR", {

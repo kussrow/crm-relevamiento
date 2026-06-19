@@ -49,6 +49,14 @@ export async function createEvento(d: EventoInput): Promise<number> {
   return rows[0].id;
 }
 
+export async function updateEvento(id: number, d: EventoInput): Promise<void> {
+  await query(
+    `UPDATE eventos SET tipo=$1, titulo=$2, fecha=$3, cliente=$4, telefono=$5,
+       notas=$6, updated_at=now() WHERE id=$7`,
+    [d.tipo, d.titulo, d.fecha, d.cliente ?? null, d.telefono ?? null, d.notas ?? null, id]
+  );
+}
+
 export async function deleteEvento(id: number): Promise<void> {
   await query(`DELETE FROM eventos WHERE id = $1`, [id]);
 }

@@ -2,7 +2,7 @@
 
 import { Fragment, useState } from "react";
 import Link from "next/link";
-import { ChevronRight, FileDown } from "lucide-react";
+import { ChevronRight, FileDown, Pencil } from "lucide-react";
 import { formatMoneda } from "@/lib/format";
 import { NegocioBadge } from "@/components/badges";
 import { formatFecha, PRESU_ESTADO_INFO } from "@/lib/scoring";
@@ -90,8 +90,26 @@ export default function PresupuestosTabla({
                   <td className="px-4 py-3 text-right text-xs text-faint">
                     {formatFecha(p.created_at)}
                   </td>
-                  <td className="px-2 py-3 text-right">
-                    <BotonEliminarPresupuesto id={p.id} />
+                  <td className="px-2 py-3">
+                    <div className="flex items-center justify-end gap-0.5">
+                      <Link
+                        href={`/presupuestos/${p.id}`}
+                        title="Editar"
+                        className="rounded-md p-1.5 text-faint transition-colors hover:bg-hover hover:text-accent"
+                      >
+                        <Pencil className="h-4 w-4" />
+                      </Link>
+                      <a
+                        href={`/pdf/presupuesto/${p.id}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        title="Descargar PDF"
+                        className="rounded-md p-1.5 text-faint transition-colors hover:bg-hover hover:text-accent"
+                      >
+                        <FileDown className="h-4 w-4" />
+                      </a>
+                      <BotonEliminarPresupuesto id={p.id} />
+                    </div>
                   </td>
                 </tr>
 

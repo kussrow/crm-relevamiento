@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import {
   createEvento,
+  updateEvento,
   deleteEvento,
   toggleEventoHecho,
   type EventoInput,
@@ -12,6 +13,11 @@ export async function crearEventoAction(data: EventoInput): Promise<number> {
   const id = await createEvento(data);
   revalidatePath("/agenda");
   return id;
+}
+
+export async function actualizarEventoAction(id: number, data: EventoInput) {
+  await updateEvento(id, data);
+  revalidatePath("/agenda");
 }
 
 export async function eliminarEventoAction(id: number) {

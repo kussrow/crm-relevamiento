@@ -2,11 +2,21 @@
 const EVO_URL = process.env.EVOLUTION_URL || "https://evolution.openstyle.com.ar";
 const EVO_KEY = process.env.EVOLUTION_API_KEY || "";
 
+export type TipoMensaje =
+  | "texto"
+  | "audio"
+  | "imagen"
+  | "video"
+  | "documento"
+  | "otro";
+
 export interface ChatMessage {
   id: string;
   fromMe: boolean;
   text: string;
   timestamp: number;
+  tipo: TipoMensaje;
+  mediaId?: string; // key.id para pedir el archivo a Evolution
 }
 
 type RawMsg = {
@@ -15,19 +25,19 @@ type RawMsg = {
   messageTimestamp?: number | string;
 };
 
-function extractText(m: RawMsg): string {
+function classify(m: RawMsg): { text: string; tipo: TipoMensaje } {
   const msg = (m.message || {}) as Record<string, unknown>;
   const ext = msg.extendedTextMessage as { text?: string } | undefined;
   const img = msg.imageMessage as { caption?: string } | undefined;
-  if (typeof msg.conversation === "string") return msg.conversation;
-  if (ext?.text) return ext.text;
-  if (img) return img.caption ? `🖼️ ${img.caption}` : "🖼️ Imagen";
-  if (msg.audioMessage) return "🎤 Audio";
-  if (msg.videoMessage) return "🎬 Video";
-  if (msg.documentMessage) return "📎 Documento";
-  if (msg.stickerMessage) return "Sticker";
-  if (msg.locationMessage) return "📍 Ubicación";
-  return "(mensaje)";
+  if (typeof msg.conversation === "string") return { text: msg.conversation, tipo: "texto" };
+  if (ext?.text) return { text: ext.text, tipo: "texto" };
+  if (img) return { text: img.caption ? `🖼️ ${img.caption}` : "🖼️ Imagen", tipo: "imagen" };
+  if (msg.audioMessage) return { text: "🎤 Audio", tipo: "audio" };
+  if (msg.videoMessage) return { text: "🎬 Video", tipo: "video" };
+  if (msg.documentMessage) return { text: "📎 Documento", tipo: "documento" };
+  if (msg.stickerMessage) return { text: "Sticker", tipo: "otro" };
+  if (msg.locationMessage) return { text: "📍 Ubicación", tipo: "otro" };
+  return { text: "(mensaje)", tipo: "otro" };
 }
 
 async function queryMessages(
@@ -72,13 +82,48 @@ export async function fetchMessages(
   }
 
   return [...byId.values()]
-    .map((m) => ({
-      id: m.key?.id ?? String(m.messageTimestamp),
-      fromMe: !!m.key?.fromMe,
-      text: extractText(m),
-      timestamp: Number(m.messageTimestamp) || 0,
-    }))
+    .map((m) => {
+      const c = classify(m);
+      return {
+        id: m.key?.id ?? String(m.messageTimestamp),
+        fromMe: !!m.key?.fromMe,
+        text: c.text,
+        tipo: c.tipo,
+        mediaId: c.tipo === "audio" ? m.key?.id : undefined,
+        timestamp: Number(m.messageTimestamp) || 0,
+      };
+    })
     .sort((a, b) => a.timestamp - b.timestamp);
+}
+
+// Descarga el archivo (audio/imagen/etc.) de un mensaje desde Evolution.
+export async function fetchMediaBase64(
+  instance: string,
+  messageId: string
+): Promise<{ bytes: Buffer; mimetype: string } | null> {
+  try {
+    const res = await fetch(
+      `${EVO_URL}/chat/getBase64FromMediaMessage/${instance}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey: EVO_KEY },
+        body: JSON.stringify({
+          message: { key: { id: messageId } },
+          convertToMp4: false,
+        }),
+        cache: "no-store",
+      }
+    );
+    if (!res.ok) return null;
+    const data = await res.json();
+    if (!data?.base64) return null;
+    return {
+      bytes: Buffer.from(data.base64, "base64"),
+      mimetype: data.mimetype || "audio/ogg",
+    };
+  } catch {
+    return null;
+  }
 }
 
 // Normaliza un teléfono argentino al formato que espera WhatsApp:

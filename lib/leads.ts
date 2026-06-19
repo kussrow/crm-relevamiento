@@ -124,6 +124,27 @@ export async function getLeadsCompletos(): Promise<LeadOpcion[]> {
   );
 }
 
+// Clientes = leads cuyos datos ya cargamos a mano (personales o de facturación).
+export async function getClientesConDatos(q?: string): Promise<Lead[]> {
+  const params: unknown[] = [];
+  let extra = "";
+  if (q) {
+    params.push(`%${q}%`);
+    extra = ` AND (nombre ILIKE $1 OR telefono ILIKE $1
+      OR datos_personales->>'nombre' ILIKE $1
+      OR datos_personales->>'apellido' ILIKE $1
+      OR datos_facturacion->>'razon_social' ILIKE $1
+      OR datos_facturacion->>'cuit' ILIKE $1)`;
+  }
+  return query<Lead>(
+    `SELECT * FROM leads
+     WHERE (datos_personales IS NOT NULL OR datos_facturacion IS NOT NULL)${extra}
+     ORDER BY updated_at DESC
+     LIMIT 500`,
+    params
+  );
+}
+
 export interface LeadInput {
   negocio?: string;
   fecha_mensaje?: string;

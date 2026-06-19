@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import {
   LayoutDashboard,
   Inbox,
+  Users,
   FileText,
   CalendarDays,
   Settings,
@@ -15,6 +16,7 @@ import {
 const links = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/bandeja", label: "Bandeja", icon: Inbox },
+  { href: "/clientes", label: "Clientes", icon: Users },
   { href: "/presupuestos", label: "Presupuestos", icon: FileText },
   { href: "/agenda", label: "Agenda", icon: CalendarDays },
   { href: "/configuracion", label: "Ajustes", icon: Settings },

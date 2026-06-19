@@ -8,6 +8,39 @@ export type Estado =
   | "ganado"
   | "perdido";
 
+// Datos cargados a mano desde el CRM, separados de la clasificación IA.
+export interface DatosPersonales {
+  nombre?: string;
+  apellido?: string;
+  dni?: string;
+  email?: string;
+  telefono?: string;
+  direccion?: string;
+  localidad?: string;
+  provincia?: string;
+}
+
+export type CondicionIVA =
+  | "Responsable Inscripto"
+  | "Monotributo"
+  | "Consumidor Final"
+  | "Exento";
+
+export const CONDICIONES_IVA: CondicionIVA[] = [
+  "Responsable Inscripto",
+  "Monotributo",
+  "Consumidor Final",
+  "Exento",
+];
+
+export interface DatosFacturacion {
+  razon_social?: string;
+  cuit?: string;
+  condicion_iva?: CondicionIVA | "";
+  domicilio_fiscal?: string;
+  email_facturacion?: string;
+}
+
 export interface Lead {
   id: number;
   negocio: Negocio;
@@ -35,10 +68,20 @@ export interface Lead {
   etiquetas: string | null;
   estado: Estado;
   notas: string | null;
+  datos_personales: DatosPersonales | null;
+  datos_facturacion: DatosFacturacion | null;
   created_at: string;
   updated_at: string;
   score: number;
   temperatura: Temperatura;
+}
+
+// Lead representante de un cliente (agrupado por teléfono) + agregados.
+export interface ClienteLead extends Lead {
+  ckey: string;
+  consultas: number;
+  any_humano: boolean;
+  max_score: number;
 }
 
 export const ESTADOS: Estado[] = [
@@ -73,6 +116,31 @@ export interface Presupuesto {
   items: PresupuestoItem[];
   notas: string | null;
   total: number;
+  vence_el: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+// Agenda / calendario
+export type TipoEvento = "visita" | "reunion" | "llamada" | "seguimiento" | "otro";
+export const TIPOS_EVENTO: TipoEvento[] = [
+  "visita",
+  "reunion",
+  "llamada",
+  "seguimiento",
+  "otro",
+];
+
+export interface Evento {
+  id: number;
+  tipo: TipoEvento;
+  titulo: string;
+  fecha: string; // ISO timestamptz
+  lead_id: number | null;
+  cliente: string | null;
+  telefono: string | null;
+  notas: string | null;
+  hecho: boolean;
   created_at: string;
   updated_at: string;
 }

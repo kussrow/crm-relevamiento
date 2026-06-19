@@ -1,5 +1,11 @@
 import { Flame, Thermometer, Snowflake, type LucideIcon } from "lucide-react";
-import type { Temperatura, Estado, Negocio } from "./types";
+import type {
+  Temperatura,
+  Estado,
+  Negocio,
+  TipoEvento,
+  EstadoPresupuesto,
+} from "./types";
 
 // Temperatura: color + icono monocromático + pill tintada.
 export const TEMP_INFO: Record<
@@ -47,6 +53,54 @@ export const ESTADO_INFO: Record<
 export const NEGOCIO_INFO: Record<Negocio, { label: string; dot: string; chart: string }> = {
   piscinas: { label: "Piscinas", dot: "bg-sky-500", chart: "text-sky-500" },
   vivero: { label: "Vivero", dot: "bg-green-500", chart: "text-green-500" },
+};
+
+// Tipos de evento de la agenda: color por tipo.
+export const EVENTO_INFO: Record<
+  TipoEvento,
+  { label: string; dot: string; badge: string; text: string }
+> = {
+  visita: {
+    label: "Visita",
+    dot: "bg-emerald-500",
+    badge: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400",
+    text: "text-emerald-600 dark:text-emerald-400",
+  },
+  reunion: {
+    label: "Reunión",
+    dot: "bg-violet-500",
+    badge: "bg-violet-500/10 text-violet-600 dark:text-violet-400",
+    text: "text-violet-600 dark:text-violet-400",
+  },
+  llamada: {
+    label: "Llamada",
+    dot: "bg-blue-500",
+    badge: "bg-blue-500/10 text-blue-600 dark:text-blue-400",
+    text: "text-blue-600 dark:text-blue-400",
+  },
+  seguimiento: {
+    label: "Seguimiento",
+    dot: "bg-amber-500",
+    badge: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
+    text: "text-amber-600 dark:text-amber-400",
+  },
+  otro: {
+    label: "Otro",
+    dot: "bg-zinc-400",
+    badge: "bg-zinc-500/10 text-zinc-500 dark:text-zinc-400",
+    text: "text-zinc-500 dark:text-zinc-400",
+  },
+};
+
+// Estado de presupuesto: etiqueta + pill (client-safe, sin acceso a DB).
+export const PRESU_ESTADO_INFO: Record<
+  EstadoPresupuesto,
+  { label: string; badge: string }
+> = {
+  borrador: { label: "Borrador", badge: "bg-zinc-500/10 text-zinc-500 dark:text-zinc-400" },
+  enviado: { label: "Enviado", badge: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
+  aceptado: { label: "Aceptado", badge: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
+  rechazado: { label: "Rechazado", badge: "bg-red-500/10 text-red-600 dark:text-red-400" },
 };
 
 export function whatsappLink(telefono: string | null): string | null {

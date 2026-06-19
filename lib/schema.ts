@@ -44,6 +44,10 @@ CREATE TABLE IF NOT EXISTS leads (
     END
   ) STORED
 );
+-- Datos cargados manualmente desde el CRM (separados de la clasificación IA).
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS datos_personales  JSONB;
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS datos_facturacion JSONB;
+
 CREATE INDEX IF NOT EXISTS idx_leads_negocio   ON leads (negocio);
 CREATE INDEX IF NOT EXISTS idx_leads_estado    ON leads (estado);
 CREATE INDEX IF NOT EXISTS idx_leads_categoria ON leads (categoria);
@@ -68,4 +72,20 @@ CREATE TABLE IF NOT EXISTS presupuestos (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+ALTER TABLE presupuestos ADD COLUMN IF NOT EXISTS vence_el DATE;
+
+CREATE TABLE IF NOT EXISTS eventos (
+  id         BIGSERIAL PRIMARY KEY,
+  tipo       TEXT NOT NULL DEFAULT 'otro',   -- visita | reunion | llamada | seguimiento | otro
+  titulo     TEXT NOT NULL,
+  fecha      TIMESTAMPTZ NOT NULL,
+  lead_id    BIGINT,
+  cliente    TEXT,
+  telefono   TEXT,
+  notas      TEXT,
+  hecho      BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_eventos_fecha ON eventos (fecha);
 `;

@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, Trash2, Send, Save } from "lucide-react";
+import { Plus, Trash2, Send, Save, FileDown } from "lucide-react";
 import {
   guardarPresupuesto,
   eliminarPresupuesto,
@@ -25,6 +25,7 @@ export default function PresupuestoForm({
   const [telefono, setTelefono] = useState(presupuesto?.telefono ?? prefill?.telefono ?? "");
   const [negocio, setNegocio] = useState(presupuesto?.negocio ?? prefill?.negocio ?? "piscinas");
   const [estado, setEstado] = useState<EstadoPresupuesto>(presupuesto?.estado ?? "borrador");
+  const [venceEl, setVenceEl] = useState(presupuesto?.vence_el ?? "");
   const [notas, setNotas] = useState(presupuesto?.notas ?? "");
   const [items, setItems] = useState<PresupuestoItem[]>(
     presupuesto?.items?.length ? presupuesto.items : [{ descripcion: "", cantidad: 1, precio: 0 }]
@@ -47,7 +48,7 @@ export default function PresupuestoForm({
   const guardar = (after?: "enviar") =>
     start(async () => {
       setMsg(null);
-      const data = { cliente, telefono, negocio, estado, notas, items, lead_id };
+      const data = { cliente, telefono, negocio, estado, notas, items, lead_id, vence_el: venceEl };
       const pid = await guardarPresupuesto(id, data);
       setId(pid);
       if (after === "enviar") {
@@ -112,6 +113,15 @@ export default function PresupuestoForm({
               </option>
             ))}
           </select>
+          <label className="flex flex-col gap-1">
+            <span className="text-xs text-faint">Vence el</span>
+            <input
+              type="date"
+              className={inputCls}
+              value={venceEl}
+              onChange={(e) => setVenceEl(e.target.value)}
+            />
+          </label>
         </div>
       </section>
 
@@ -203,6 +213,16 @@ export default function PresupuestoForm({
         >
           <Send className="h-4 w-4" /> Enviar por WhatsApp
         </button>
+        {id && (
+          <a
+            href={`/pdf/presupuesto/${id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 rounded-md border border-border px-4 py-2 text-sm font-medium text-muted hover:bg-hover hover:text-fg"
+          >
+            <FileDown className="h-4 w-4" /> Descargar PDF
+          </a>
+        )}
         <button
           onClick={eliminar}
           disabled={pending}

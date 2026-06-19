@@ -3,12 +3,21 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { LayoutDashboard, Inbox, FileText, PanelLeft } from "lucide-react";
+import {
+  LayoutDashboard,
+  Inbox,
+  FileText,
+  CalendarDays,
+  Settings,
+  PanelLeft,
+} from "lucide-react";
 
 const links = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/bandeja", label: "Bandeja", icon: Inbox },
   { href: "/presupuestos", label: "Presupuestos", icon: FileText },
+  { href: "/agenda", label: "Agenda", icon: CalendarDays },
+  { href: "/configuracion", label: "Ajustes", icon: Settings },
 ];
 
 export default function Sidebar() {

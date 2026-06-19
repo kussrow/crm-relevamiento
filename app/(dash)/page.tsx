@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { MessageSquare, TriangleAlert, Waves, Sprout, type LucideIcon } from "lucide-react";
 import { getMetrics, getPrioritarios } from "@/lib/leads";
 import { ESTADO_INFO, TEMP_INFO, NEGOCIO_INFO, timeAgo } from "@/lib/scoring";
 import { TemperaturaBadge, NegocioBadge } from "@/components/badges";
@@ -8,12 +9,36 @@ import type { Estado, Temperatura, Negocio } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-function Kpi({ label, value, hint }: { label: string; value: string | number; hint?: string }) {
+const NEGOCIO_ICON: Record<string, LucideIcon> = {
+  piscinas: Waves,
+  vivero: Sprout,
+};
+
+function Kpi({
+  label,
+  value,
+  hint,
+  icon: Icon,
+  color = "text-fg",
+}: {
+  label: string;
+  value: string | number;
+  hint?: string;
+  icon?: LucideIcon;
+  color?: string;
+}) {
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
-      <div className="text-xs uppercase tracking-wide text-faint">{label}</div>
-      <div className="mt-1 text-3xl font-semibold text-fg">{value}</div>
-      {hint && <div className="text-xs text-faint">{hint}</div>}
+    <div className="flex items-start gap-4 rounded-lg border border-border bg-card p-5">
+      {Icon && (
+        <div className={`rounded-lg bg-hover p-2.5 ${color}`}>
+          <Icon className="h-5 w-5" />
+        </div>
+      )}
+      <div className="min-w-0">
+        <div className="text-xs uppercase tracking-wide text-faint">{label}</div>
+        <div className="mt-1 text-3xl font-semibold text-fg">{value}</div>
+        {hint && <div className="text-xs text-faint">{hint}</div>}
+      </div>
     </div>
   );
 }
@@ -57,14 +82,22 @@ export default async function DashboardPage() {
       <h1 className="mb-5 text-xl font-semibold text-fg">Dashboard</h1>
 
       <div className="mb-5 grid grid-cols-2 gap-4 lg:grid-cols-4">
-        <Kpi label="Consultas totales" value={m.total} />
+        <Kpi label="Consultas totales" value={m.total} icon={MessageSquare} color="text-blue-500" />
         <Kpi
           label="Requieren humano"
           value={m.requiereHumano}
           hint={`${Math.round((m.requiereHumano / (m.total || 1)) * 100)}% del total`}
+          icon={TriangleAlert}
+          color="text-red-500"
         />
         {m.porNegocio.map((n) => (
-          <Kpi key={n.negocio} label={NEGOCIO_INFO[n.negocio as Negocio]?.label ?? n.negocio} value={n.total} />
+          <Kpi
+            key={n.negocio}
+            label={NEGOCIO_INFO[n.negocio as Negocio]?.label ?? n.negocio}
+            value={n.total}
+            icon={NEGOCIO_ICON[n.negocio]}
+            color={NEGOCIO_INFO[n.negocio as Negocio]?.chart ?? "text-fg"}
+          />
         ))}
       </div>
 

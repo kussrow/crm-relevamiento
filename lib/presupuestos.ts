@@ -3,9 +3,12 @@ import { formatMoneda } from "./format";
 import type { Presupuesto, PresupuestoItem, EstadoPresupuesto } from "./types";
 
 export { formatMoneda };
+// Re-export para compatibilidad; la fuente vive en scoring.ts (client-safe).
+export { PRESU_ESTADO_INFO } from "./scoring";
 
 const SELECT = `SELECT id, negocio, cliente, telefono, lead_id, estado, items, notas,
-  total::float8 AS total, created_at, updated_at FROM presupuestos`;
+  total::float8 AS total, to_char(vence_el, 'YYYY-MM-DD') AS vence_el,
+  created_at, updated_at FROM presupuestos`;
 
 export async function getPresupuestos(): Promise<Presupuesto[]> {
   return query<Presupuesto>(`${SELECT} ORDER BY created_at DESC LIMIT 500`);
@@ -23,6 +26,7 @@ export interface PresupuestoInput {
   estado?: EstadoPresupuesto;
   items?: PresupuestoItem[];
   notas?: string | null;
+  vence_el?: string | null;
 }
 
 function calcTotal(items: PresupuestoItem[] = []): number {
@@ -35,8 +39,8 @@ function calcTotal(items: PresupuestoItem[] = []): number {
 export async function createPresupuesto(d: PresupuestoInput): Promise<number> {
   const items = d.items ?? [];
   const rows = await query<{ id: number }>(
-    `INSERT INTO presupuestos (negocio, cliente, telefono, lead_id, estado, items, notas, total)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
+    `INSERT INTO presupuestos (negocio, cliente, telefono, lead_id, estado, items, notas, total, vence_el)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
     [
       d.negocio ?? null,
       d.cliente ?? null,
@@ -46,6 +50,7 @@ export async function createPresupuesto(d: PresupuestoInput): Promise<number> {
       JSON.stringify(items),
       d.notas ?? null,
       calcTotal(items),
+      d.vence_el || null,
     ]
   );
   return rows[0].id;
@@ -55,7 +60,7 @@ export async function updatePresupuesto(id: number, d: PresupuestoInput): Promis
   const items = d.items ?? [];
   await query(
     `UPDATE presupuestos SET negocio=$1, cliente=$2, telefono=$3, estado=$4,
-       items=$5, notas=$6, total=$7, updated_at=now() WHERE id=$8`,
+       items=$5, notas=$6, total=$7, vence_el=$8, updated_at=now() WHERE id=$9`,
     [
       d.negocio ?? null,
       d.cliente ?? null,
@@ -64,6 +69,7 @@ export async function updatePresupuesto(id: number, d: PresupuestoInput): Promis
       JSON.stringify(items),
       d.notas ?? null,
       calcTotal(items),
+      d.vence_el || null,
       id,
     ]
   );
@@ -92,16 +98,8 @@ export function presupuestoToTexto(p: Presupuesto): string {
     (p.cliente ? `Cliente: ${p.cliente}\n` : "") +
     `\n${lineas}\n\n` +
     `*TOTAL: ${formatMoneda(p.total)}*` +
+    (p.vence_el ? `\nVálido hasta: ${p.vence_el.split("-").reverse().join("/")}` : "") +
     (p.notas ? `\n\n${p.notas}` : "")
   );
 }
 
-export const PRESU_ESTADO_INFO: Record<
-  EstadoPresupuesto,
-  { label: string; badge: string }
-> = {
-  borrador: { label: "Borrador", badge: "bg-zinc-500/10 text-zinc-500 dark:text-zinc-400" },
-  enviado: { label: "Enviado", badge: "bg-blue-500/10 text-blue-600 dark:text-blue-400" },
-  aceptado: { label: "Aceptado", badge: "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400" },
-  rechazado: { label: "Rechazado", badge: "bg-red-500/10 text-red-600 dark:text-red-400" },
-};

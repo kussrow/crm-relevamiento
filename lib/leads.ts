@@ -1,5 +1,12 @@
 import { query, queryOne } from "./db";
-import type { Lead, Estado, Negocio } from "./types";
+import type {
+  Lead,
+  ClienteLead,
+  Estado,
+  Negocio,
+  DatosPersonales,
+  DatosFacturacion,
+} from "./types";
 
 export interface LeadFilters {
   negocio?: string;
@@ -10,7 +17,7 @@ export interface LeadFilters {
   sort?: "score" | "fecha";
 }
 
-export async function getLeads(filters: LeadFilters = {}): Promise<Lead[]> {
+function buildWhere(filters: LeadFilters): { whereSql: string; params: unknown[] } {
   const where: string[] = [];
   const params: unknown[] = [];
 
@@ -37,7 +44,11 @@ export async function getLeads(filters: LeadFilters = {}): Promise<Lead[]> {
     );
   }
 
-  const whereSql = where.length ? `WHERE ${where.join(" AND ")}` : "";
+  return { whereSql: where.length ? `WHERE ${where.join(" AND ")}` : "", params };
+}
+
+export async function getLeads(filters: LeadFilters = {}): Promise<Lead[]> {
+  const { whereSql, params } = buildWhere(filters);
   const orderSql =
     filters.sort === "fecha"
       ? "ORDER BY fecha_mensaje DESC NULLS LAST"
@@ -49,8 +60,68 @@ export async function getLeads(filters: LeadFilters = {}): Promise<Lead[]> {
   );
 }
 
+// Una fila por cliente: agrupa los leads por teléfono (o por id cuando no hay
+// teléfono) y devuelve el lead más reciente como representante, junto con el
+// total de consultas y el mejor score del cliente.
+export async function getClientes(filters: LeadFilters = {}): Promise<ClienteLead[]> {
+  const { whereSql, params } = buildWhere(filters);
+  const orderSql =
+    filters.sort === "fecha"
+      ? "ORDER BY r.fecha_mensaje DESC NULLS LAST"
+      : "ORDER BY a.max_score DESC, r.fecha_mensaje DESC NULLS LAST";
+
+  return query<ClienteLead>(
+    `WITH base AS (SELECT * FROM leads ${whereSql}),
+     keyed AS (
+       SELECT *, COALESCE(NULLIF(telefono, ''), 'lead-' || id::text) AS ckey FROM base
+     ),
+     agg AS (
+       SELECT ckey,
+              count(*)::int        AS consultas,
+              bool_or(requiere_humano) AS any_humano,
+              max(score)           AS max_score
+       FROM keyed GROUP BY ckey
+     ),
+     ranked AS (
+       SELECT k.*,
+              row_number() OVER (
+                PARTITION BY ckey
+                ORDER BY fecha_mensaje DESC NULLS LAST, id DESC
+              ) AS rn
+       FROM keyed k
+     )
+     SELECT r.*, a.consultas, a.any_humano, a.max_score
+     FROM ranked r JOIN agg a USING (ckey)
+     WHERE r.rn = 1
+     ${orderSql}
+     LIMIT 500`,
+    params
+  );
+}
+
 export async function getLead(id: number): Promise<Lead | null> {
   return queryOne<Lead>(`SELECT * FROM leads WHERE id = $1`, [id]);
+}
+
+export interface LeadOpcion {
+  id: number;
+  nombre: string | null;
+  telefono: string | null;
+  negocio: Negocio;
+  datos_personales: DatosPersonales | null;
+  datos_facturacion: DatosFacturacion | null;
+}
+
+// Leads con datos cargados a mano (personales o de facturación), para elegir
+// al armar un presupuesto.
+export async function getLeadsCompletos(): Promise<LeadOpcion[]> {
+  return query<LeadOpcion>(
+    `SELECT id, nombre, telefono, negocio, datos_personales, datos_facturacion
+     FROM leads
+     WHERE datos_personales IS NOT NULL OR datos_facturacion IS NOT NULL
+     ORDER BY updated_at DESC
+     LIMIT 200`
+  );
 }
 
 export interface LeadInput {
@@ -140,6 +211,17 @@ export async function updateEstado(id: number, estado: Estado): Promise<void> {
   );
 }
 
+// Mueve a un estado todas las consultas de un mismo cliente (teléfono).
+export async function updateEstadoByTelefono(
+  telefono: string,
+  estado: Estado
+): Promise<void> {
+  await query(
+    `UPDATE leads SET estado = $1, updated_at = now() WHERE telefono = $2`,
+    [estado, telefono]
+  );
+}
+
 export async function deleteLead(id: number): Promise<void> {
   await query(`DELETE FROM leads WHERE id = $1`, [id]);
 }
@@ -149,6 +231,26 @@ export async function updateNotas(id: number, notas: string): Promise<void> {
     notas,
     id,
   ]);
+}
+
+export async function updateDatosPersonales(
+  id: number,
+  datos: DatosPersonales
+): Promise<void> {
+  await query(
+    `UPDATE leads SET datos_personales = $1, updated_at = now() WHERE id = $2`,
+    [JSON.stringify(datos), id]
+  );
+}
+
+export async function updateDatosFacturacion(
+  id: number,
+  datos: DatosFacturacion
+): Promise<void> {
+  await query(
+    `UPDATE leads SET datos_facturacion = $1, updated_at = now() WHERE id = $2`,
+    [JSON.stringify(datos), id]
+  );
 }
 
 export async function getCategorias(negocio?: string): Promise<string[]> {

@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { getLead } from "@/lib/leads";
 import { TemperaturaBadge, NegocioBadge } from "@/components/badges";
 import EstadoSelector from "@/components/EstadoSelector";
+import DatosCliente from "@/components/DatosCliente";
 import NotasEditor from "@/components/NotasEditor";
 import Conversacion from "@/components/Conversacion";
 import BotonEliminar from "@/components/BotonEliminar";
@@ -85,6 +86,21 @@ export default async function LeadPage({
           </div>
           <EstadoSelector id={lead.id} current={lead.estado} />
         </div>
+      </div>
+
+      {/* Datos cargados a mano: personales y facturación (separados) */}
+      <div className="mb-4">
+        <DatosCliente
+          id={lead.id}
+          personales={lead.datos_personales}
+          facturacion={lead.datos_facturacion}
+          fallback={{
+            nombre: lead.nombre,
+            telefono: lead.telefono,
+            localidad: lead.ciudad,
+            provincia: lead.provincia,
+          }}
+        />
       </div>
 
       <div className="grid gap-4 md:grid-cols-3">

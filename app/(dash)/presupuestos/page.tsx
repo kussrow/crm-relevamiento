@@ -12,7 +12,7 @@ export default async function PresupuestosPage() {
 
   return (
     <div className="p-6">
-      <div className="mb-5 flex items-center justify-between">
+      <div className="mb-5 flex items-center justify-between gap-3">
         <div>
           <h1 className="flex items-center gap-2 text-xl font-semibold text-fg">
             <FileText className="h-5 w-5 text-accent" /> Presupuestos
@@ -21,7 +21,7 @@ export default async function PresupuestosPage() {
         </div>
         <Link
           href="/presupuestos/nuevo"
-          className="flex items-center gap-1.5 rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-fg hover:opacity-90"
+          className="flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-fg hover:opacity-90"
         >
           <Plus className="h-4 w-4" /> Nuevo presupuesto
         </Link>

@@ -36,7 +36,7 @@ export default async function BandejaPage({
 
   return (
     <div className="p-6">
-      <div className="mb-5 flex items-start justify-between gap-4">
+      <div className="mb-5 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
         <div>
           <h1 className="flex items-center gap-2 text-xl font-semibold text-fg">
             <Inbox className="h-5 w-5 text-accent" /> Bandeja de clientes

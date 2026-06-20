@@ -216,7 +216,10 @@ export default function PresupuestoForm({
             <span />
           </div>
           {items.map((it, i) => (
-            <div key={i} className="grid grid-cols-2 gap-2 sm:grid-cols-[6rem_1fr_4rem_6rem_5rem_2rem]">
+            <div
+              key={i}
+              className="grid grid-cols-2 gap-2 rounded-lg border border-border p-3 sm:grid-cols-[6rem_1fr_4rem_6rem_5rem_2rem] sm:items-center sm:gap-2 sm:rounded-none sm:border-0 sm:p-0"
+            >
               <input
                 className={`${inputCls} col-span-2 sm:col-span-1 ${
                   lookup[i] === "ok"
@@ -243,26 +246,33 @@ export default function PresupuestoForm({
                 value={it.descripcion}
                 onChange={(e) => updateItem(i, "descripcion", e.target.value)}
               />
-              <input
-                className={inputCls}
-                type="number"
-                min={0}
-                value={it.cantidad}
-                onChange={(e) => updateItem(i, "cantidad", e.target.value)}
-              />
-              <input
-                className={inputCls}
-                type="number"
-                min={0}
-                value={it.precio}
-                onChange={(e) => updateItem(i, "precio", e.target.value)}
-              />
-              <div className="flex items-center justify-end text-sm font-medium text-fg">
-                {formatMoneda((Number(it.cantidad) || 0) * (Number(it.precio) || 0), moneda)}
+              <label className="flex flex-col gap-0.5 sm:contents">
+                <span className="text-xs text-faint sm:hidden">Cantidad</span>
+                <input
+                  className={inputCls}
+                  type="number"
+                  min={0}
+                  value={it.cantidad}
+                  onChange={(e) => updateItem(i, "cantidad", e.target.value)}
+                />
+              </label>
+              <label className="flex flex-col gap-0.5 sm:contents">
+                <span className="text-xs text-faint sm:hidden">Precio unit.</span>
+                <input
+                  className={inputCls}
+                  type="number"
+                  min={0}
+                  value={it.precio}
+                  onChange={(e) => updateItem(i, "precio", e.target.value)}
+                />
+              </label>
+              <div className="flex items-center justify-between text-sm font-medium text-fg sm:justify-end">
+                <span className="text-xs font-normal text-faint sm:hidden">Subtotal</span>
+                <span>{formatMoneda((Number(it.cantidad) || 0) * (Number(it.precio) || 0), moneda)}</span>
               </div>
               <button
                 onClick={() => removeItem(i)}
-                className="flex items-center justify-center rounded-md p-1.5 text-faint hover:bg-hover hover:text-red-500"
+                className="flex items-center justify-center justify-self-end rounded-md p-1.5 text-faint hover:bg-hover hover:text-red-500"
                 title="Quitar ítem"
               >
                 <Trash2 className="h-4 w-4" />

@@ -121,7 +121,7 @@ export default function Conversacion({
   };
 
   return (
-    <section className="flex h-[28rem] flex-col rounded-lg border border-border bg-card">
+    <section className="flex h-[28rem] min-w-0 flex-col rounded-lg border border-border bg-card">
       <div className="flex items-center justify-between border-b border-border px-4 py-2.5">
         <h2 className="text-sm font-semibold text-fg">Conversación</h2>
         <button
@@ -263,8 +263,8 @@ export default function Conversacion({
               }
             }}
             rows={1}
-            placeholder={archivo ? "Mensaje para el archivo (opcional)…" : "Escribí una respuesta…  (Enter para enviar)"}
-            className="max-h-28 flex-1 resize-none rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-muted"
+            placeholder={archivo ? "Mensaje para el archivo (opcional)…" : "Escribí una respuesta…"}
+            className="max-h-28 min-w-0 flex-1 resize-none rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-muted"
           />
           <button
             onClick={enviar}

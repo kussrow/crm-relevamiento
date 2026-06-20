@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Search, Users } from "lucide-react";
 import { getClientesConDatos } from "@/lib/leads";
+import { getSesion } from "@/lib/auth";
 import { NegocioBadge } from "@/components/badges";
 import AccionesCliente from "@/components/AccionesCliente";
 import NuevoCliente from "@/components/NuevoCliente";
@@ -23,7 +24,8 @@ export default async function ClientesPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const sp = await searchParams;
-  const clientes = await getClientesConDatos(sp.q);
+  const sesion = await getSesion();
+  const clientes = await getClientesConDatos(sp.q, sesion?.negocio);
 
   return (
     <div className="p-6">
@@ -47,7 +49,7 @@ export default async function ClientesPage({
               className="w-72 rounded-md border border-border bg-card py-2 pl-9 pr-3 text-sm text-fg outline-none focus:border-accent"
             />
           </form>
-          <NuevoCliente />
+          <NuevoCliente negocioFijo={sesion?.negocio ?? undefined} />
         </div>
       </div>
 

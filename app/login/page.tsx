@@ -15,10 +15,19 @@ export default async function LoginPage({
         </div>
         <form action="/api/login" method="post" className="space-y-3">
           <input
+            type="text"
+            name="usuario"
+            required
+            autoFocus
+            autoComplete="username"
+            placeholder="Usuario"
+            className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-muted"
+          />
+          <input
             type="password"
             name="password"
             required
-            autoFocus
+            autoComplete="current-password"
             placeholder="Contraseña"
             className="w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-muted"
           />

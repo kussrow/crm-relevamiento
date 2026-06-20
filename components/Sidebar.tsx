@@ -9,6 +9,7 @@ import {
   Users,
   FileText,
   CalendarDays,
+  MessageSquareText,
   Settings,
   PanelLeft,
 } from "lucide-react";
@@ -19,6 +20,7 @@ const links = [
   { href: "/clientes", label: "Clientes", icon: Users },
   { href: "/presupuestos", label: "Presupuestos", icon: FileText },
   { href: "/agenda", label: "Agenda", icon: CalendarDays },
+  { href: "/respuestas", label: "Respuestas", icon: MessageSquareText },
   { href: "/configuracion", label: "Ajustes", icon: Settings },
 ];
 

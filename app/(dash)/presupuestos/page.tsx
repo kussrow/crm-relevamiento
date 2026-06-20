@@ -1,12 +1,14 @@
 import Link from "next/link";
 import { Plus, FileText } from "lucide-react";
 import { getPresupuestos } from "@/lib/presupuestos";
+import { getSesion } from "@/lib/auth";
 import PresupuestosTabla from "@/components/PresupuestosTabla";
 
 export const dynamic = "force-dynamic";
 
 export default async function PresupuestosPage() {
-  const presupuestos = await getPresupuestos();
+  const sesion = await getSesion();
+  const presupuestos = await getPresupuestos(sesion?.negocio);
 
   return (
     <div className="p-6">

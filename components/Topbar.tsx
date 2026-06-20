@@ -4,10 +4,25 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Bell, Sun, Moon, User, Settings, LogOut } from "lucide-react";
 import BotControl from "@/components/BotControl";
+import type { Negocio } from "@/lib/types";
 
 type Notif = { id: number; nombre: string | null; negocio: string; categoria: string | null };
 
-export default function Topbar() {
+const ROL_LABEL: Record<string, string> = {
+  admin: "Administrador",
+  piscinas: "Piscinas",
+  vivero: "Vivero",
+};
+
+export default function Topbar({
+  usuario,
+  rol,
+  negocio,
+}: {
+  usuario: string;
+  rol: string;
+  negocio: Negocio | null;
+}) {
   const [dark, setDark] = useState(false);
   const [open, setOpen] = useState<null | "bell" | "user">(null);
   const [notifs, setNotifs] = useState<Notif[]>([]);
@@ -42,7 +57,7 @@ export default function Topbar() {
       ref={ref}
       className="flex h-14 items-center justify-end gap-1 border-b border-border bg-card px-4"
     >
-      <BotControl />
+      <BotControl negocio={negocio} />
       <button
         onClick={toggleTheme}
         className="rounded-md p-2 text-muted transition-colors hover:bg-hover hover:text-fg"
@@ -97,7 +112,11 @@ export default function Topbar() {
           <User className="h-4 w-4" />
         </button>
         {open === "user" && (
-          <div className="absolute right-0 z-20 mt-1 w-44 rounded-lg border border-border bg-card p-1 shadow-lg">
+          <div className="absolute right-0 z-20 mt-1 w-52 rounded-lg border border-border bg-card p-1 shadow-lg">
+            <div className="border-b border-border px-3 py-2">
+              <div className="text-sm font-medium text-fg">{usuario || "—"}</div>
+              <div className="text-xs text-faint">{ROL_LABEL[rol] ?? rol}</div>
+            </div>
             <Link
               href="/configuracion"
               onClick={() => setOpen(null)}

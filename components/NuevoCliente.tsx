@@ -38,12 +38,12 @@ function Campo({
   );
 }
 
-export default function NuevoCliente() {
+export default function NuevoCliente({ negocioFijo }: { negocioFijo?: Negocio }) {
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [saving, start] = useTransition();
 
-  const [negocio, setNegocio] = useState<Negocio>("piscinas");
+  const [negocio, setNegocio] = useState<Negocio>(negocioFijo ?? "piscinas");
   const [d, setD] = useState<DatosPersonales>({});
 
   const set = (k: keyof DatosPersonales, v: string) =>
@@ -54,7 +54,7 @@ export default function NuevoCliente() {
   );
 
   const abrir = () => {
-    setNegocio("piscinas");
+    setNegocio(negocioFijo ?? "piscinas");
     setD({});
     setOpen(true);
   };
@@ -98,7 +98,7 @@ export default function NuevoCliente() {
               </button>
             </div>
 
-            <div className="mb-3 flex gap-2">
+            <div className={`mb-3 flex gap-2 ${negocioFijo ? "hidden" : ""}`}>
               {NEGOCIOS.map((n) => {
                 const Icon = n.icon;
                 const active = negocio === n.value;

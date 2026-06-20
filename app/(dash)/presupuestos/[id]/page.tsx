@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getPresupuesto } from "@/lib/presupuestos";
+import { getSesion } from "@/lib/auth";
 import PresupuestoForm from "@/components/PresupuestoForm";
 
 export const dynamic = "force-dynamic";
@@ -11,8 +12,12 @@ export default async function EditarPresupuestoPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const presupuesto = await getPresupuesto(Number(id));
+  const [presupuesto, sesion] = await Promise.all([
+    getPresupuesto(Number(id)),
+    getSesion(),
+  ]);
   if (!presupuesto) notFound();
+  if (sesion?.negocio && presupuesto.negocio !== sesion.negocio) notFound();
 
   return (
     <div className="mx-auto max-w-3xl p-6">
@@ -25,7 +30,7 @@ export default async function EditarPresupuestoPage({
       <h1 className="mb-5 text-xl font-semibold text-fg">
         Presupuesto #{presupuesto.id}
       </h1>
-      <PresupuestoForm presupuesto={presupuesto} />
+      <PresupuestoForm presupuesto={presupuesto} negocioFijo={sesion?.negocio ?? undefined} />
     </div>
   );
 }

@@ -88,4 +88,33 @@ CREATE TABLE IF NOT EXISTS eventos (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS idx_eventos_fecha ON eventos (fecha);
+-- Rubro del evento (piscinas | vivero) para aislar la agenda por usuario.
+ALTER TABLE eventos ADD COLUMN IF NOT EXISTS negocio TEXT;
+
+-- Catálogo de productos sincronizado desde Dux Software.
+CREATE TABLE IF NOT EXISTS productos_dux (
+  cod_item    TEXT PRIMARY KEY,
+  descripcion TEXT,
+  costo       NUMERIC,
+  porc_iva    NUMERIC,
+  precios     JSONB NOT NULL DEFAULT '[]'::jsonb,
+  stock       NUMERIC,
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_productos_dux_desc ON productos_dux (lower(descripcion));
+
+-- Respuestas frecuentes reutilizables en el chat (separadas por rubro).
+CREATE TABLE IF NOT EXISTS respuestas (
+  id         BIGSERIAL PRIMARY KEY,
+  negocio    TEXT,
+  titulo     TEXT NOT NULL,
+  texto      TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS idx_respuestas_negocio ON respuestas (negocio);
+-- Adjunto opcional (imagen/PDF/etc.) guardado en la propia base.
+ALTER TABLE respuestas ADD COLUMN IF NOT EXISTS adjunto_nombre TEXT;
+ALTER TABLE respuestas ADD COLUMN IF NOT EXISTS adjunto_mime   TEXT;
+ALTER TABLE respuestas ADD COLUMN IF NOT EXISTS adjunto_datos  BYTEA;
 `;

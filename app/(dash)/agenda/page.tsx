@@ -1,6 +1,7 @@
 import { CalendarDays } from "lucide-react";
 import { getEventos } from "@/lib/eventos";
 import { getClientesConDatos } from "@/lib/leads";
+import { getSesion } from "@/lib/auth";
 import Calendario from "@/components/Calendario";
 
 export const dynamic = "force-dynamic";
@@ -22,9 +23,11 @@ export default async function AgendaPage({
   const hasta =
     month === 11 ? `${year + 1}-01-01` : `${year}-${pad(month + 2)}-01`;
 
+  const sesion = await getSesion();
+  const neg = sesion?.negocio ?? undefined;
   const [eventos, clientesRaw] = await Promise.all([
-    getEventos(desde, hasta),
-    getClientesConDatos(),
+    getEventos(desde, hasta, neg),
+    getClientesConDatos(undefined, neg),
   ]);
 
   const clientes = clientesRaw.map((c) => {
@@ -46,7 +49,13 @@ export default async function AgendaPage({
           Visitas, reuniones, llamadas y seguimientos
         </p>
       </div>
-      <Calendario year={year} month={month} eventos={eventos} clientes={clientes} />
+      <Calendario
+        year={year}
+        month={month}
+        eventos={eventos}
+        clientes={clientes}
+        negocioFijo={sesion?.negocio ?? undefined}
+      />
     </div>
   );
 }

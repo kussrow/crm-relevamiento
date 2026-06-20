@@ -114,27 +114,41 @@ export interface LeadOpcion {
 
 // Leads con datos cargados a mano (personales o de facturación), para elegir
 // al armar un presupuesto.
-export async function getLeadsCompletos(): Promise<LeadOpcion[]> {
+export async function getLeadsCompletos(negocio?: string | null): Promise<LeadOpcion[]> {
+  const params: unknown[] = [];
+  let extra = "";
+  if (negocio) {
+    params.push(negocio);
+    extra = ` AND negocio = $${params.length}`;
+  }
   return query<LeadOpcion>(
     `SELECT id, nombre, telefono, negocio, datos_personales, datos_facturacion
      FROM leads
-     WHERE datos_personales IS NOT NULL OR datos_facturacion IS NOT NULL
+     WHERE (datos_personales IS NOT NULL OR datos_facturacion IS NOT NULL)${extra}
      ORDER BY updated_at DESC
-     LIMIT 200`
+     LIMIT 200`,
+    params
   );
 }
 
 // Clientes = leads cuyos datos ya cargamos a mano (personales o de facturación).
-export async function getClientesConDatos(q?: string): Promise<Lead[]> {
+export async function getClientesConDatos(
+  q?: string,
+  negocio?: string | null
+): Promise<Lead[]> {
   const params: unknown[] = [];
   let extra = "";
   if (q) {
     params.push(`%${q}%`);
-    extra = ` AND (nombre ILIKE $1 OR telefono ILIKE $1
-      OR datos_personales->>'nombre' ILIKE $1
-      OR datos_personales->>'apellido' ILIKE $1
-      OR datos_facturacion->>'razon_social' ILIKE $1
-      OR datos_facturacion->>'cuit' ILIKE $1)`;
+    extra += ` AND (nombre ILIKE $${params.length} OR telefono ILIKE $${params.length}
+      OR datos_personales->>'nombre' ILIKE $${params.length}
+      OR datos_personales->>'apellido' ILIKE $${params.length}
+      OR datos_facturacion->>'razon_social' ILIKE $${params.length}
+      OR datos_facturacion->>'cuit' ILIKE $${params.length})`;
+  }
+  if (negocio) {
+    params.push(negocio);
+    extra += ` AND negocio = $${params.length}`;
   }
   return query<Lead>(
     `SELECT * FROM leads
@@ -242,13 +256,20 @@ export async function insertLead(d: LeadInput): Promise<number> {
 
 // Leads prioritarios para atender desde el dashboard:
 // calientes o que requieren humano, todavía sin cerrar.
-export async function getPrioritarios(): Promise<Lead[]> {
+export async function getPrioritarios(negocio?: string | null): Promise<Lead[]> {
+  const params: unknown[] = [];
+  let extra = "";
+  if (negocio) {
+    params.push(negocio);
+    extra = ` AND negocio = $${params.length}`;
+  }
   return query<Lead>(
     `SELECT * FROM leads
      WHERE estado IN ('nuevo', 'contactado')
-       AND (temperatura = 'caliente' OR requiere_humano = true)
+       AND (temperatura = 'caliente' OR requiere_humano = true)${extra}
      ORDER BY score DESC, fecha_mensaje DESC NULLS LAST
-     LIMIT 6`
+     LIMIT 6`,
+    params
   );
 }
 

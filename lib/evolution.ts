@@ -150,6 +150,57 @@ export function normalizeArPhone(raw: string): string {
   return "549" + n;
 }
 
+export type MediaType = "image" | "video" | "document" | "audio";
+
+// Deduce el mediatype de Evolution a partir del mimetype.
+export function mediaTypeFromMime(mime: string): MediaType {
+  if (mime.startsWith("image/")) return "image";
+  if (mime.startsWith("video/")) return "video";
+  if (mime.startsWith("audio/")) return "audio";
+  return "document";
+}
+
+// Envía un archivo (imagen, documento, etc.) por WhatsApp vía Evolution (sendMedia v2).
+export async function sendMedia(
+  instance: string,
+  telefono: string,
+  base64: string,
+  mimetype: string,
+  fileName: string,
+  caption?: string,
+  mediatype: MediaType = mediaTypeFromMime(mimetype)
+): Promise<void> {
+  const number = normalizeArPhone(telefono);
+  const res = await fetch(`${EVO_URL}/message/sendMedia/${instance}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", apikey: EVO_KEY },
+    body: JSON.stringify({
+      number,
+      mediatype,
+      mimetype,
+      media: base64,
+      fileName,
+      caption: caption || "",
+    }),
+    cache: "no-store",
+  });
+  if (!res.ok) {
+    const t = await res.text();
+    throw new Error(`Evolution sendMedia ${res.status}: ${t}`);
+  }
+}
+
+// Atajo para PDFs (usado al enviar presupuestos).
+export async function sendDocument(
+  instance: string,
+  telefono: string,
+  base64: string,
+  fileName: string,
+  caption?: string
+): Promise<void> {
+  return sendMedia(instance, telefono, base64, "application/pdf", fileName, caption, "document");
+}
+
 export async function sendMessage(
   instance: string,
   telefono: string,

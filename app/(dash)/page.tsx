@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MessageSquare, TriangleAlert, Waves, Sprout, LayoutDashboard, type LucideIcon } from "lucide-react";
 import { getMetrics, getPrioritarios } from "@/lib/leads";
+import { getSesion } from "@/lib/auth";
 import { ESTADO_INFO, TEMP_INFO, NEGOCIO_INFO, timeAgo } from "@/lib/scoring";
 import { TemperaturaBadge, NegocioBadge } from "@/components/badges";
 import Donut from "@/components/charts/Donut";
@@ -53,7 +54,9 @@ function Card({ title, children }: { title: string; children: React.ReactNode })
 }
 
 export default async function DashboardPage() {
-  const [m, prioritarios] = await Promise.all([getMetrics(), getPrioritarios()]);
+  const sesion = await getSesion();
+  const neg = sesion?.negocio ?? undefined;
+  const [m, prioritarios] = await Promise.all([getMetrics(neg), getPrioritarios(neg)]);
   const maxCat = Math.max(1, ...m.porCategoria.map((c) => c.total));
 
   const estadoOrder: Estado[] = ["nuevo", "contactado", "presupuesto", "ganado", "perdido"];

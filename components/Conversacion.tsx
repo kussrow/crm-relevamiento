@@ -1,7 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { MessageSquareText, Paperclip, X } from "lucide-react";
 import type { ChatMessage } from "@/lib/evolution";
+
+type RespuestaRapida = {
+  id: number;
+  titulo: string;
+  texto: string;
+  tiene_adjunto?: boolean;
+  adjunto_nombre?: string | null;
+  adjunto_mime?: string | null;
+};
 
 export default function Conversacion({
   negocio,
@@ -15,7 +25,11 @@ export default function Conversacion({
   const [error, setError] = useState<string | null>(null);
   const [texto, setTexto] = useState("");
   const [sending, setSending] = useState(false);
+  const [respuestas, setRespuestas] = useState<RespuestaRapida[]>([]);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [archivo, setArchivo] = useState<File | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const load = useCallback(async () => {
     try {
@@ -39,21 +53,61 @@ export default function Conversacion({
   }, [load]);
 
   useEffect(() => {
+    fetch("/api/respuestas")
+      .then((r) => r.json())
+      .then((d) => setRespuestas(d.respuestas || []))
+      .catch(() => {});
+  }, []);
+
+  const usarRespuesta = async (r: RespuestaRapida) => {
+    setTexto((prev) => (prev ? `${prev}\n${r.texto}` : r.texto));
+    setMenuOpen(false);
+    // Si la respuesta tiene un adjunto, lo dejamos listo para enviar.
+    if (r.tiene_adjunto) {
+      try {
+        const res = await fetch(`/api/respuestas/adjunto?id=${r.id}`);
+        if (res.ok) {
+          const blob = await res.blob();
+          setArchivo(
+            new File([blob], r.adjunto_nombre || "adjunto", {
+              type: r.adjunto_mime || blob.type,
+            })
+          );
+        }
+      } catch {
+        /* si falla, queda solo el texto */
+      }
+    }
+  };
+
+  useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight });
   }, [messages]);
 
   const enviar = async () => {
-    if (!texto.trim()) return;
+    if (!texto.trim() && !archivo) return;
     setSending(true);
     try {
-      const res = await fetch("/api/responder", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ negocio, telefono, texto }),
-      });
+      let res: Response;
+      if (archivo) {
+        const fd = new FormData();
+        fd.append("negocio", negocio);
+        fd.append("telefono", telefono);
+        fd.append("caption", texto);
+        fd.append("file", archivo);
+        res = await fetch("/api/responder/media", { method: "POST", body: fd });
+      } else {
+        res = await fetch("/api/responder", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ negocio, telefono, texto }),
+        });
+      }
       if (res.ok) {
         setTexto("");
-        setTimeout(load, 800);
+        setArchivo(null);
+        if (fileRef.current) fileRef.current.value = "";
+        setTimeout(load, 1000);
       } else {
         const d = await res.json();
         setError(d.error || "No se pudo enviar");
@@ -127,9 +181,76 @@ export default function Conversacion({
         ))}
       </div>
 
-      <div className="border-t border-border p-2">
+      <div className="relative border-t border-border p-2">
         {error && <p className="px-2 pb-1 text-xs text-red-500">{error}</p>}
+        {menuOpen && respuestas.length > 0 && (
+          <div className="absolute bottom-full left-2 z-20 mb-1 max-h-64 w-72 overflow-y-auto rounded-lg border border-border bg-card p-1 shadow-lg">
+            <div className="px-2 py-1 text-xs font-medium text-faint">Respuestas frecuentes</div>
+            {respuestas.map((r) => (
+              <button
+                key={r.id}
+                onClick={() => usarRespuesta(r)}
+                className="block w-full rounded-md px-2 py-1.5 text-left text-sm hover:bg-hover"
+              >
+                <div className="flex items-center gap-1.5 font-medium text-fg">
+                  {r.titulo}
+                  {r.tiene_adjunto && <Paperclip className="h-3 w-3 text-faint" />}
+                </div>
+                <div className="truncate text-xs text-faint">{r.texto}</div>
+              </button>
+            ))}
+          </div>
+        )}
+        {archivo && (
+          <div className="mb-2 flex items-center gap-2 rounded-md border border-border bg-hover px-2 py-1.5">
+            {archivo.type.startsWith("image/") ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={URL.createObjectURL(archivo)}
+                alt={archivo.name}
+                className="h-10 w-10 rounded object-cover"
+              />
+            ) : (
+              <Paperclip className="h-4 w-4 text-faint" />
+            )}
+            <span className="min-w-0 flex-1 truncate text-xs text-fg">{archivo.name}</span>
+            <button
+              onClick={() => {
+                setArchivo(null);
+                if (fileRef.current) fileRef.current.value = "";
+              }}
+              className="rounded p-0.5 text-faint hover:bg-card hover:text-red-500"
+              title="Quitar"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        )}
         <div className="flex items-end gap-2">
+          <input
+            ref={fileRef}
+            type="file"
+            accept="image/*,application/pdf,.doc,.docx,.xls,.xlsx"
+            className="hidden"
+            onChange={(e) => setArchivo(e.target.files?.[0] ?? null)}
+          />
+          <button
+            type="button"
+            onClick={() => fileRef.current?.click()}
+            title="Adjuntar archivo o foto"
+            className="rounded-md border border-border p-2 text-muted hover:bg-hover hover:text-fg"
+          >
+            <Paperclip className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setMenuOpen((o) => !o)}
+            disabled={respuestas.length === 0}
+            title="Respuestas frecuentes"
+            className="rounded-md border border-border p-2 text-muted hover:bg-hover hover:text-fg disabled:opacity-40"
+          >
+            <MessageSquareText className="h-4 w-4" />
+          </button>
           <textarea
             value={texto}
             onChange={(e) => setTexto(e.target.value)}
@@ -140,12 +261,12 @@ export default function Conversacion({
               }
             }}
             rows={1}
-            placeholder="Escribí una respuesta…  (Enter para enviar)"
+            placeholder={archivo ? "Mensaje para el archivo (opcional)…" : "Escribí una respuesta…  (Enter para enviar)"}
             className="max-h-28 flex-1 resize-none rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-muted"
           />
           <button
             onClick={enviar}
-            disabled={sending || !texto.trim()}
+            disabled={sending || (!texto.trim() && !archivo)}
             className="rounded-md bg-accent px-4 py-2 text-sm font-medium text-accent-fg hover:bg-accent disabled:opacity-40"
           >
             {sending ? "…" : "Enviar"}

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Bot } from "lucide-react";
+import type { Negocio } from "@/lib/types";
 
 type Bots = { piscinas: boolean; vivero: boolean };
 
@@ -22,10 +23,13 @@ function Switch({ on, onClick }: { on: boolean; onClick: () => void }) {
   );
 }
 
-export default function BotControl() {
+export default function BotControl({ negocio }: { negocio: Negocio | null }) {
   const [bots, setBots] = useState<Bots>({ piscinas: false, vivero: false });
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+
+  // Rubros que este usuario puede controlar (admin = ambos).
+  const visibles: Negocio[] = negocio ? [negocio] : ["piscinas", "vivero"];
 
   useEffect(() => {
     fetch("/api/bot-config")
@@ -52,7 +56,8 @@ export default function BotControl() {
     }).catch(() => {});
   };
 
-  const anyOn = bots.piscinas || bots.vivero;
+  const anyOn = visibles.some((n) => bots[n]);
+  const NEG_LABEL: Record<Negocio, string> = { piscinas: "Piscinas", vivero: "Vivero" };
 
   return (
     <div className="relative" ref={ref}>
@@ -72,14 +77,12 @@ export default function BotControl() {
           <p className="mb-3 text-[11px] text-faint">
             Cuando está ON, el bot responde las consultas con la respuesta sugerida por IA.
           </p>
-          <div className="flex items-center justify-between py-1.5">
-            <span className="text-sm text-fg">Piscinas</span>
-            <Switch on={bots.piscinas} onClick={() => toggle("piscinas")} />
-          </div>
-          <div className="flex items-center justify-between py-1.5">
-            <span className="text-sm text-fg">Vivero</span>
-            <Switch on={bots.vivero} onClick={() => toggle("vivero")} />
-          </div>
+          {visibles.map((n) => (
+            <div key={n} className="flex items-center justify-between py-1.5">
+              <span className="text-sm text-fg">{NEG_LABEL[n]}</span>
+              <Switch on={bots[n]} onClick={() => toggle(n)} />
+            </div>
+          ))}
         </div>
       )}
     </div>

@@ -10,7 +10,13 @@ const SELECT = `SELECT id, negocio, cliente, telefono, lead_id, estado, items, n
   total::float8 AS total, to_char(vence_el, 'YYYY-MM-DD') AS vence_el,
   created_at, updated_at FROM presupuestos`;
 
-export async function getPresupuestos(): Promise<Presupuesto[]> {
+export async function getPresupuestos(negocio?: string | null): Promise<Presupuesto[]> {
+  if (negocio) {
+    return query<Presupuesto>(
+      `${SELECT} WHERE negocio = $1 ORDER BY created_at DESC LIMIT 500`,
+      [negocio]
+    );
+  }
   return query<Presupuesto>(`${SELECT} ORDER BY created_at DESC LIMIT 500`);
 }
 

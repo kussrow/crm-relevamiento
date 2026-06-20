@@ -101,6 +101,7 @@ export const ESTADOS_PRESUPUESTO: EstadoPresupuesto[] = [
 ];
 
 export interface PresupuestoItem {
+  codigo?: string; // código de producto en Dux (opcional)
   descripcion: string;
   cantidad: number;
   precio: number;
@@ -139,6 +140,7 @@ export interface Evento {
   lead_id: number | null;
   cliente: string | null;
   telefono: string | null;
+  negocio: Negocio | null;
   notas: string | null;
   hecho: boolean;
   created_at: string;

@@ -1,5 +1,22 @@
 import { query, queryOne } from "./db";
 
+// Acceso genérico a la tabla config (key/value).
+export async function getConfig(key: string): Promise<string | null> {
+  const row = await queryOne<{ value: string }>(
+    `SELECT value FROM config WHERE key = $1`,
+    [key]
+  );
+  return row?.value ?? null;
+}
+
+export async function setConfig(key: string, value: string): Promise<void> {
+  await query(
+    `INSERT INTO config (key, value) VALUES ($1, $2)
+     ON CONFLICT (key) DO UPDATE SET value = $2`,
+    [key, value]
+  );
+}
+
 export async function getBot(negocio: string): Promise<boolean> {
   const row = await queryOne<{ value: string }>(
     `SELECT value FROM config WHERE key = $1`,

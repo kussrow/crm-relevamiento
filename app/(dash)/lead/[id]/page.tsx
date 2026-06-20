@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLead } from "@/lib/leads";
+import { getSesion } from "@/lib/auth";
 import { TemperaturaBadge, NegocioBadge } from "@/components/badges";
 import EstadoSelector from "@/components/EstadoSelector";
 import DatosCliente from "@/components/DatosCliente";
@@ -27,8 +28,10 @@ export default async function LeadPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const lead = await getLead(Number(id));
+  const [lead, sesion] = await Promise.all([getLead(Number(id)), getSesion()]);
   if (!lead) notFound();
+  // Usuario restringido: no puede abrir leads de otro rubro.
+  if (sesion?.negocio && lead.negocio !== sesion.negocio) notFound();
 
   const wa = whatsappLink(lead.telefono);
 

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getClientes, getCategorias, type LeadFilters } from "@/lib/leads";
+import { getSesion } from "@/lib/auth";
 import Filtros from "@/components/Filtros";
 import VistaSwitcher from "@/components/VistaSwitcher";
 import BandejaKanban from "@/components/BandejaKanban";
@@ -16,8 +17,11 @@ export default async function BandejaPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const sp = await searchParams;
+  const sesion = await getSesion();
+  // Usuario restringido: se fuerza su rubro e ignora el filtro de la URL.
+  const negocio = sesion?.negocio ?? sp.negocio;
   const filters: LeadFilters = {
-    negocio: sp.negocio,
+    negocio,
     estado: sp.estado,
     temperatura: sp.temperatura,
     categoria: sp.categoria,
@@ -27,7 +31,7 @@ export default async function BandejaPage({
 
   const [clientes, categorias] = await Promise.all([
     getClientes(filters),
-    getCategorias(sp.negocio),
+    getCategorias(negocio),
   ]);
 
   return (
@@ -46,7 +50,7 @@ export default async function BandejaPage({
       </div>
 
       <div className="mb-4">
-        <Filtros categorias={categorias} />
+        <Filtros categorias={categorias} mostrarNegocio={!sesion?.negocio} />
       </div>
 
       {vista === "kanban" ? (

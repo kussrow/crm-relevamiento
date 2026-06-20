@@ -16,8 +16,8 @@ import {
   CalendarDays,
   CalendarRange,
 } from "lucide-react";
-import { EVENTO_INFO } from "@/lib/scoring";
-import { TIPOS_EVENTO, type TipoEvento, type Evento } from "@/lib/types";
+import { EVENTO_INFO, NEGOCIO_INFO } from "@/lib/scoring";
+import { TIPOS_EVENTO, type TipoEvento, type Evento, type Negocio } from "@/lib/types";
 import {
   crearEventoAction,
   actualizarEventoAction,
@@ -54,11 +54,13 @@ export default function Calendario({
   month,
   eventos,
   clientes = [],
+  negocioFijo,
 }: {
   year: number;
   month: number; // 0-based
   eventos: Evento[];
   clientes?: ClienteOpcion[];
+  negocioFijo?: Negocio;
 }) {
   const router = useRouter();
   const [, start] = useTransition();
@@ -76,6 +78,7 @@ export default function Calendario({
   const [cliente, setCliente] = useState("");
   const [telefono, setTelefono] = useState("");
   const [leadId, setLeadId] = useState<number | null>(null);
+  const [negocio, setNegocio] = useState<Negocio>(negocioFijo ?? "piscinas");
   const [notas, setNotas] = useState("");
   const [hecho, setHecho] = useState(false);
 
@@ -140,6 +143,7 @@ export default function Calendario({
     setCliente("");
     setTelefono("");
     setLeadId(null);
+    setNegocio(negocioFijo ?? "piscinas");
     setNotas("");
     setHecho(false);
     setModalOpen(true);
@@ -153,6 +157,7 @@ export default function Calendario({
     setCliente(e.cliente ?? "");
     setTelefono(e.telefono ?? "");
     setLeadId(e.lead_id ?? null);
+    setNegocio(e.negocio ?? negocioFijo ?? "piscinas");
     setNotas(e.notas ?? "");
     setHecho(e.hecho);
     setModalOpen(true);
@@ -160,7 +165,7 @@ export default function Calendario({
 
   const guardar = () => {
     if (!titulo.trim() || !fecha) return;
-    const data = { tipo, titulo, fecha, cliente, telefono, notas, lead_id: leadId };
+    const data = { tipo, titulo, fecha, cliente, telefono, notas, lead_id: leadId, negocio };
     start(async () => {
       if (editId) await actualizarEventoAction(editId, data);
       else await crearEventoAction(data);
@@ -424,6 +429,28 @@ export default function Calendario({
                 value={fecha}
                 onChange={(e) => setFecha(e.target.value)}
               />
+              {!negocioFijo && (
+                <div className="flex gap-2">
+                  {(["piscinas", "vivero"] as Negocio[]).map((n) => {
+                    const active = negocio === n;
+                    return (
+                      <button
+                        key={n}
+                        type="button"
+                        onClick={() => setNegocio(n)}
+                        className={`flex flex-1 items-center justify-center gap-2 rounded-md border px-3 py-1.5 text-sm transition-colors ${
+                          active
+                            ? "border-accent bg-accent text-accent-fg"
+                            : "border-border text-muted hover:bg-hover"
+                        }`}
+                      >
+                        <span className={`h-2 w-2 rounded-full ${NEGOCIO_INFO[n].dot}`} />
+                        {NEGOCIO_INFO[n].label}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-3">
                 <input
                   className={inputCls}

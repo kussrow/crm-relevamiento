@@ -3,14 +3,24 @@ import type { Evento, TipoEvento } from "./types";
 
 const SELECT = `SELECT id, tipo, titulo,
   to_char(fecha, 'YYYY-MM-DD"T"HH24:MI') AS fecha,
-  lead_id, cliente, telefono, notas, hecho, created_at, updated_at
+  lead_id, cliente, telefono, negocio, notas, hecho, created_at, updated_at
   FROM eventos`;
 
 // Eventos en el rango [desde, hasta) — fechas 'YYYY-MM-DD'.
-export async function getEventos(desde: string, hasta: string): Promise<Evento[]> {
+export async function getEventos(
+  desde: string,
+  hasta: string,
+  negocio?: string | null
+): Promise<Evento[]> {
+  const params: unknown[] = [desde, hasta];
+  let extra = "";
+  if (negocio) {
+    params.push(negocio);
+    extra = ` AND negocio = $${params.length}`;
+  }
   return query<Evento>(
-    `${SELECT} WHERE fecha >= $1 AND fecha < $2 ORDER BY fecha`,
-    [desde, hasta]
+    `${SELECT} WHERE fecha >= $1 AND fecha < $2${extra} ORDER BY fecha`,
+    params
   );
 }
 
@@ -29,13 +39,14 @@ export interface EventoInput {
   cliente?: string | null;
   telefono?: string | null;
   lead_id?: number | null;
+  negocio?: string | null;
   notas?: string | null;
 }
 
 export async function createEvento(d: EventoInput): Promise<number> {
   const rows = await query<{ id: number }>(
-    `INSERT INTO eventos (tipo, titulo, fecha, lead_id, cliente, telefono, notas)
-     VALUES ($1,$2,$3,$4,$5,$6,$7) RETURNING id`,
+    `INSERT INTO eventos (tipo, titulo, fecha, lead_id, cliente, telefono, negocio, notas)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8) RETURNING id`,
     [
       d.tipo,
       d.titulo,
@@ -43,6 +54,7 @@ export async function createEvento(d: EventoInput): Promise<number> {
       d.lead_id ?? null,
       d.cliente ?? null,
       d.telefono ?? null,
+      d.negocio ?? null,
       d.notas ?? null,
     ]
   );
@@ -52,7 +64,7 @@ export async function createEvento(d: EventoInput): Promise<number> {
 export async function updateEvento(id: number, d: EventoInput): Promise<void> {
   await query(
     `UPDATE eventos SET tipo=$1, titulo=$2, fecha=$3, cliente=$4, telefono=$5,
-       notas=$6, lead_id=$7, updated_at=now() WHERE id=$8`,
+       notas=$6, lead_id=$7, negocio=$8, updated_at=now() WHERE id=$9`,
     [
       d.tipo,
       d.titulo,
@@ -61,6 +73,7 @@ export async function updateEvento(id: number, d: EventoInput): Promise<void> {
       d.telefono ?? null,
       d.notas ?? null,
       d.lead_id ?? null,
+      d.negocio ?? null,
       id,
     ]
   );

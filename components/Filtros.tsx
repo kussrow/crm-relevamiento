@@ -26,7 +26,13 @@ const ESTADOS = [
   { value: "perdido", label: "Perdido" },
 ];
 
-export default function Filtros({ categorias }: { categorias: string[] }) {
+export default function Filtros({
+  categorias,
+  mostrarNegocio = true,
+}: {
+  categorias: string[];
+  mostrarNegocio?: boolean;
+}) {
   const router = useRouter();
   const sp = useSearchParams();
 
@@ -51,17 +57,19 @@ export default function Filtros({ categorias }: { categorias: string[] }) {
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <div className="flex gap-1.5">
-        {NEGOCIOS.map((n) => (
-          <button
-            key={n.value}
-            onClick={() => setParam("negocio", n.value)}
-            className={chip(get("negocio") === n.value)}
-          >
-            {n.label}
-          </button>
-        ))}
-      </div>
+      {mostrarNegocio && (
+        <div className="flex gap-1.5">
+          {NEGOCIOS.map((n) => (
+            <button
+              key={n.value}
+              onClick={() => setParam("negocio", n.value)}
+              className={chip(get("negocio") === n.value)}
+            >
+              {n.label}
+            </button>
+          ))}
+        </div>
+      )}
 
       <div className="flex gap-1.5">
         {TEMPS.map((t) => {

@@ -7,6 +7,7 @@ import {
   guardarPresupuesto,
   eliminarPresupuesto,
   enviarPresupuesto,
+  buscarProductoDuxAction,
 } from "@/app/(dash)/presupuestos/actions";
 import { formatMoneda } from "@/lib/format";
 import { ESTADOS_PRESUPUESTO } from "@/lib/types";
@@ -15,15 +16,19 @@ import type { Presupuesto, PresupuestoItem, EstadoPresupuesto } from "@/lib/type
 export default function PresupuestoForm({
   presupuesto,
   prefill,
+  negocioFijo,
 }: {
   presupuesto: Presupuesto | null;
   prefill?: { cliente?: string; telefono?: string; negocio?: string; lead_id?: number };
+  negocioFijo?: string;
 }) {
   const router = useRouter();
   const [id, setId] = useState<number | null>(presupuesto?.id ?? null);
   const [cliente, setCliente] = useState(presupuesto?.cliente ?? prefill?.cliente ?? "");
   const [telefono, setTelefono] = useState(presupuesto?.telefono ?? prefill?.telefono ?? "");
-  const [negocio, setNegocio] = useState(presupuesto?.negocio ?? prefill?.negocio ?? "piscinas");
+  const [negocio, setNegocio] = useState(
+    negocioFijo ?? presupuesto?.negocio ?? prefill?.negocio ?? "piscinas"
+  );
   const [estado, setEstado] = useState<EstadoPresupuesto>(presupuesto?.estado ?? "borrador");
   const [venceEl, setVenceEl] = useState(presupuesto?.vence_el ?? "");
   const [notas, setNotas] = useState(presupuesto?.notas ?? "");
@@ -32,18 +37,44 @@ export default function PresupuestoForm({
   );
   const [pending, start] = useTransition();
   const [msg, setMsg] = useState<string | null>(null);
+  // Estado por fila de la búsqueda en Dux: "" | "buscando" | "ok" | "no"
+  const [lookup, setLookup] = useState<Record<number, string>>({});
 
   const lead_id = presupuesto?.lead_id ?? prefill?.lead_id ?? null;
   const total = items.reduce((a, b) => a + (Number(b.cantidad) || 0) * (Number(b.precio) || 0), 0);
 
   const updateItem = (i: number, field: keyof PresupuestoItem, val: string) =>
-    setItems(
-      items.map((it, idx) =>
-        idx === i ? { ...it, [field]: field === "descripcion" ? val : Number(val) } : it
+    setItems((prev) =>
+      prev.map((it, idx) =>
+        idx === i
+          ? {
+              ...it,
+              [field]: field === "descripcion" || field === "codigo" ? val : Number(val),
+            }
+          : it
       )
     );
-  const addItem = () => setItems([...items, { descripcion: "", cantidad: 1, precio: 0 }]);
+  const addItem = () => setItems([...items, { codigo: "", descripcion: "", cantidad: 1, precio: 0 }]);
   const removeItem = (i: number) => setItems(items.filter((_, idx) => idx !== i));
+
+  // Trae el producto de Dux por código y completa descripción + precio de la fila.
+  const buscarCodigo = (i: number, cod: string) => {
+    if (!cod.trim()) return;
+    setLookup((l) => ({ ...l, [i]: "buscando" }));
+    start(async () => {
+      const r = await buscarProductoDuxAction(cod, negocio);
+      if (r) {
+        setItems((prev) =>
+          prev.map((it, idx) =>
+            idx === i ? { ...it, descripcion: r.descripcion, precio: r.precio } : it
+          )
+        );
+        setLookup((l) => ({ ...l, [i]: "ok" }));
+      } else {
+        setLookup((l) => ({ ...l, [i]: "no" }));
+      }
+    });
+  };
 
   const guardar = (after?: "enviar") =>
     start(async () => {
@@ -55,7 +86,7 @@ export default function PresupuestoForm({
         const r = await enviarPresupuesto(pid);
         if (r.ok) {
           setEstado("enviado");
-          setMsg("Presupuesto enviado por WhatsApp ✓");
+          setMsg("PDF enviado por WhatsApp ✓");
         } else {
           setMsg(`Error al enviar: ${r.error}`);
         }
@@ -98,7 +129,13 @@ export default function PresupuestoForm({
             value={telefono}
             onChange={(e) => setTelefono(e.target.value)}
           />
-          <select className={inputCls} value={negocio} onChange={(e) => setNegocio(e.target.value)}>
+          <select
+            className={inputCls}
+            value={negocio}
+            onChange={(e) => setNegocio(e.target.value)}
+            disabled={!!negocioFijo}
+            title={negocioFijo ? "Rubro fijado por tu usuario" : undefined}
+          >
             <option value="piscinas">Piscinas</option>
             <option value="vivero">Vivero</option>
           </select>
@@ -128,8 +165,12 @@ export default function PresupuestoForm({
       {/* Ítems */}
       <section className="rounded-lg border border-border bg-card p-5">
         <h2 className="mb-3 text-sm font-semibold text-fg">Ítems</h2>
+        <p className="mb-2 text-xs text-faint">
+          Cargá el código de Dux y apretá Enter para traer descripción y precio.
+        </p>
         <div className="space-y-2">
-          <div className="hidden grid-cols-[1fr_5rem_7rem_6rem_2rem] gap-2 px-1 text-xs text-faint sm:grid">
+          <div className="hidden grid-cols-[6rem_1fr_4rem_6rem_5rem_2rem] gap-2 px-1 text-xs text-faint sm:grid">
+            <span>Código</span>
             <span>Descripción</span>
             <span>Cant.</span>
             <span>Precio unit.</span>
@@ -137,7 +178,27 @@ export default function PresupuestoForm({
             <span />
           </div>
           {items.map((it, i) => (
-            <div key={i} className="grid grid-cols-2 gap-2 sm:grid-cols-[1fr_5rem_7rem_6rem_2rem]">
+            <div key={i} className="grid grid-cols-2 gap-2 sm:grid-cols-[6rem_1fr_4rem_6rem_5rem_2rem]">
+              <input
+                className={`${inputCls} col-span-2 sm:col-span-1 ${
+                  lookup[i] === "ok"
+                    ? "border-emerald-500"
+                    : lookup[i] === "no"
+                      ? "border-red-400"
+                      : ""
+                }`}
+                placeholder="Código"
+                value={it.codigo ?? ""}
+                onChange={(e) => updateItem(i, "codigo", e.target.value)}
+                onBlur={(e) => buscarCodigo(i, e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    buscarCodigo(i, (e.target as HTMLInputElement).value);
+                  }
+                }}
+                title={lookup[i] === "no" ? "No se encontró ese código en Dux" : undefined}
+              />
               <input
                 className={`${inputCls} col-span-2 sm:col-span-1`}
                 placeholder="Descripción"
@@ -208,10 +269,10 @@ export default function PresupuestoForm({
         <button
           onClick={() => guardar("enviar")}
           disabled={pending || !telefono}
-          title={!telefono ? "Cargá un teléfono primero" : "Enviar al cliente"}
+          title={!telefono ? "Cargá un teléfono primero" : "Enviar el PDF al cliente"}
           className="flex items-center gap-1.5 rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700 disabled:opacity-40"
         >
-          <Send className="h-4 w-4" /> Enviar por WhatsApp
+          <Send className="h-4 w-4" /> Enviar PDF por WhatsApp
         </button>
         {id && (
           <a

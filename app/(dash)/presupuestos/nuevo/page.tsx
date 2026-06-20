@@ -2,6 +2,7 @@ import Link from "next/link";
 import PresupuestoForm from "@/components/PresupuestoForm";
 import SelectorLeadPresupuesto from "@/components/SelectorLeadPresupuesto";
 import { getLeadsCompletos } from "@/lib/leads";
+import { getSesion } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -11,14 +12,16 @@ export default async function NuevoPresupuestoPage({
   searchParams: Promise<Record<string, string | undefined>>;
 }) {
   const sp = await searchParams;
+  const sesion = await getSesion();
   const prefill = {
     cliente: sp.cliente,
     telefono: sp.telefono,
-    negocio: sp.negocio,
+    // El rubro del usuario restringido manda sobre el de la URL.
+    negocio: sesion?.negocio ?? sp.negocio,
     lead_id: sp.lead ? Number(sp.lead) : undefined,
   };
 
-  const leads = await getLeadsCompletos();
+  const leads = await getLeadsCompletos(sesion?.negocio);
 
   return (
     <div className="mx-auto max-w-3xl p-6">
@@ -37,6 +40,7 @@ export default async function NuevoPresupuestoPage({
         key={prefill.lead_id ?? "nuevo"}
         presupuesto={null}
         prefill={prefill}
+        negocioFijo={sesion?.negocio ?? undefined}
       />
     </div>
   );

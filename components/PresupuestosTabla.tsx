@@ -29,8 +29,8 @@ export default function PresupuestosTabla({
     });
 
   return (
-    <div className="overflow-hidden rounded-lg border border-border bg-card">
-      <table className="w-full text-sm">
+    <div className="overflow-x-auto rounded-lg border border-border bg-card">
+      <table className="w-full min-w-[640px] text-sm">
         <thead>
           <tr className="border-b border-border bg-hover text-left text-xs uppercase tracking-wide text-muted">
             <th className="w-8 px-2 py-3"></th>
@@ -85,7 +85,7 @@ export default function PresupuestosTabla({
                     </span>
                   </td>
                   <td className="px-4 py-3 text-right font-medium text-fg">
-                    {formatMoneda(p.total)}
+                    {formatMoneda(p.total, p.moneda)}
                   </td>
                   <td className="px-4 py-3 text-right text-xs text-faint">
                     {formatFecha(p.created_at)}
@@ -131,11 +131,12 @@ export default function PresupuestosTabla({
                                   <tr key={i} className="border-b border-border/60 last:border-0">
                                     <td className="py-1.5 pr-2 text-fg">{it.descripcion}</td>
                                     <td className="py-1.5 text-right text-muted">
-                                      {it.cantidad} × {formatMoneda(it.precio)}
+                                      {it.cantidad} × {formatMoneda(it.precio, p.moneda)}
                                     </td>
                                     <td className="py-1.5 pl-2 text-right font-medium text-fg">
                                       {formatMoneda(
-                                        (Number(it.cantidad) || 0) * (Number(it.precio) || 0)
+                                        (Number(it.cantidad) || 0) * (Number(it.precio) || 0),
+                                        p.moneda
                                       )}
                                     </td>
                                   </tr>
@@ -152,7 +153,7 @@ export default function PresupuestosTabla({
                         <div className="space-y-2 text-sm">
                           <div className="flex justify-between">
                             <span className="text-faint">Total</span>
-                            <span className="font-semibold text-fg">{formatMoneda(p.total)}</span>
+                            <span className="font-semibold text-fg">{formatMoneda(p.total, p.moneda)}</span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-faint">Vence</span>

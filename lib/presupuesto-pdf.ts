@@ -1,6 +1,6 @@
 import { PDFDocument, StandardFonts, rgb, type PDFFont } from "pdf-lib";
 import { EMPRESA } from "./empresa";
-import { formatMoneda } from "./format";
+import { formatMoneda, equivalente } from "./format";
 import type { Presupuesto } from "./types";
 
 // Colores (equivalentes a los del PDF HTML)
@@ -211,8 +211,8 @@ export async function generarPresupuestoPdf(p: Presupuesto): Promise<Uint8Array>
     const baseline = y - 15;
     const sub = (Number(it.cantidad) || 0) * (Number(it.precio) || 0);
     txtRight(String(it.cantidad), colCantR, baseline, 9, font, TXT);
-    txtRight(formatMoneda(it.precio), colPreR, baseline, 9, font, TXT);
-    txtRight(formatMoneda(sub), colSubR, baseline, 9, bold, TXT);
+    txtRight(formatMoneda(it.precio, p.moneda), colPreR, baseline, 9, font, TXT);
+    txtRight(formatMoneda(sub, p.moneda), colSubR, baseline, 9, bold, TXT);
 
     // borde inferior
     page.drawRectangle({ x: MARGEN, y: y - rowH, width: RIGHT - MARGEN, height: 0.5, color: BORDE });
@@ -235,8 +235,25 @@ export async function generarPresupuestoPdf(p: Presupuesto): Promise<Uint8Array>
     borderWidth: 1,
   });
   txt("TOTAL", totalX + 14, y - 22, 11, bold, rgb(0.35, 0.35, 0.4));
-  txtRight(formatMoneda(p.total), RIGHT - 14, y - 24, 18, bold, AZUL);
-  y -= totalH + 24;
+  txtRight(formatMoneda(p.total, p.moneda), RIGHT - 14, y - 24, 18, bold, AZUL);
+  y -= totalH + 6;
+
+  // Equivalente en la otra moneda + cotización usada.
+  const eq = equivalente(p.total, p.moneda, p.cotizacion);
+  if (eq) {
+    txtRight(
+      `Equivale a ${formatMoneda(eq.monto, eq.moneda)}  ·  Cotización US$ 1 = ${formatMoneda(
+        p.cotizacion ?? 0
+      )}`,
+      RIGHT - 14,
+      y - 8,
+      8,
+      font,
+      GRIS
+    );
+    y -= 14;
+  }
+  y -= 18;
 
   // ===== Notas / condiciones =====
   if (p.notas && p.notas.trim()) {

@@ -3,26 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import {
-  LayoutDashboard,
-  Inbox,
-  Users,
-  FileText,
-  CalendarDays,
-  MessageSquareText,
-  Settings,
-  PanelLeft,
-} from "lucide-react";
-
-const links = [
-  { href: "/", label: "Dashboard", icon: LayoutDashboard },
-  { href: "/bandeja", label: "Bandeja", icon: Inbox },
-  { href: "/clientes", label: "Clientes", icon: Users },
-  { href: "/presupuestos", label: "Presupuestos", icon: FileText },
-  { href: "/agenda", label: "Agenda", icon: CalendarDays },
-  { href: "/respuestas", label: "Respuestas", icon: MessageSquareText },
-  { href: "/configuracion", label: "Ajustes", icon: Settings },
-];
+import { PanelLeft } from "lucide-react";
+import { NAV_LINKS as links } from "@/components/navLinks";
 
 export default function Sidebar() {
   const pathname = usePathname();
@@ -40,7 +22,7 @@ export default function Sidebar() {
 
   return (
     <aside
-      className={`flex ${
+      className={`hidden md:flex ${
         collapsed ? "w-16" : "w-52"
       } shrink-0 flex-col border-r border-border bg-card transition-[width] duration-200`}
     >

@@ -3,6 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { Plus, Pencil, Trash2, Copy, Check, X, Paperclip } from "lucide-react";
+import EmojiPicker from "@/components/EmojiPicker";
 import {
   crearRespuestaAction,
   editarRespuestaAction,
@@ -132,13 +133,18 @@ export default function RespuestasManager({
               onChange={(e) => setTitulo(e.target.value)}
               autoFocus
             />
-            <textarea
-              className={`${inputCls} w-full`}
-              rows={4}
-              placeholder="Texto del mensaje…"
-              value={texto}
-              onChange={(e) => setTexto(e.target.value)}
-            />
+            <div>
+              <textarea
+                className={`${inputCls} w-full`}
+                rows={4}
+                placeholder="Texto del mensaje…"
+                value={texto}
+                onChange={(e) => setTexto(e.target.value)}
+              />
+              <div className="mt-1">
+                <EmojiPicker onSelect={(e) => setTexto((t) => t + e)} />
+              </div>
+            </div>
             {!negocioFijo && (
               <select
                 className={`${inputCls} w-full`}

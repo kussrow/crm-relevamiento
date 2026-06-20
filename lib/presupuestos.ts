@@ -1,13 +1,14 @@
 import { query, queryOne } from "./db";
 import { formatMoneda } from "./format";
-import type { Presupuesto, PresupuestoItem, EstadoPresupuesto } from "./types";
+import type { Presupuesto, PresupuestoItem, EstadoPresupuesto, Moneda } from "./types";
 
 export { formatMoneda };
 // Re-export para compatibilidad; la fuente vive en scoring.ts (client-safe).
 export { PRESU_ESTADO_INFO } from "./scoring";
 
 const SELECT = `SELECT id, negocio, cliente, telefono, lead_id, estado, items, notas,
-  total::float8 AS total, to_char(vence_el, 'YYYY-MM-DD') AS vence_el,
+  total::float8 AS total, coalesce(moneda, 'ARS') AS moneda, cotizacion::float8 AS cotizacion,
+  to_char(vence_el, 'YYYY-MM-DD') AS vence_el,
   created_at, updated_at FROM presupuestos`;
 
 export async function getPresupuestos(negocio?: string | null): Promise<Presupuesto[]> {
@@ -32,6 +33,8 @@ export interface PresupuestoInput {
   estado?: EstadoPresupuesto;
   items?: PresupuestoItem[];
   notas?: string | null;
+  moneda?: Moneda;
+  cotizacion?: number | null;
   vence_el?: string | null;
 }
 
@@ -45,8 +48,8 @@ function calcTotal(items: PresupuestoItem[] = []): number {
 export async function createPresupuesto(d: PresupuestoInput): Promise<number> {
   const items = d.items ?? [];
   const rows = await query<{ id: number }>(
-    `INSERT INTO presupuestos (negocio, cliente, telefono, lead_id, estado, items, notas, total, vence_el)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id`,
+    `INSERT INTO presupuestos (negocio, cliente, telefono, lead_id, estado, items, notas, total, moneda, cotizacion, vence_el)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id`,
     [
       d.negocio ?? null,
       d.cliente ?? null,
@@ -56,6 +59,8 @@ export async function createPresupuesto(d: PresupuestoInput): Promise<number> {
       JSON.stringify(items),
       d.notas ?? null,
       calcTotal(items),
+      d.moneda ?? "ARS",
+      d.cotizacion ?? null,
       d.vence_el || null,
     ]
   );
@@ -66,7 +71,8 @@ export async function updatePresupuesto(id: number, d: PresupuestoInput): Promis
   const items = d.items ?? [];
   await query(
     `UPDATE presupuestos SET negocio=$1, cliente=$2, telefono=$3, estado=$4,
-       items=$5, notas=$6, total=$7, vence_el=$8, updated_at=now() WHERE id=$9`,
+       items=$5, notas=$6, total=$7, moneda=$8, cotizacion=$9, vence_el=$10,
+       updated_at=now() WHERE id=$11`,
     [
       d.negocio ?? null,
       d.cliente ?? null,
@@ -75,6 +81,8 @@ export async function updatePresupuesto(id: number, d: PresupuestoInput): Promis
       JSON.stringify(items),
       d.notas ?? null,
       calcTotal(items),
+      d.moneda ?? "ARS",
+      d.cotizacion ?? null,
       d.vence_el || null,
       id,
     ]

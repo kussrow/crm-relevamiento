@@ -38,23 +38,23 @@ export default async function ClientesPage({
             {clientes.length} cliente{clientes.length === 1 ? "" : "s"} con datos cargados
           </p>
         </div>
-        <div className="flex items-center gap-3">
-          <form className="relative" action="/clientes">
+        <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
+          <form className="relative min-w-0 flex-1 sm:flex-none" action="/clientes">
             <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-faint" />
             <input
               type="search"
               name="q"
               defaultValue={sp.q ?? ""}
               placeholder="Buscar por nombre, CUIT, teléfono…"
-              className="w-72 rounded-md border border-border bg-card py-2 pl-9 pr-3 text-sm text-fg outline-none focus:border-accent"
+              className="w-full rounded-md border border-border bg-card py-2 pl-9 pr-3 text-sm text-fg outline-none focus:border-accent sm:w-72"
             />
           </form>
           <NuevoCliente negocioFijo={sesion?.negocio ?? undefined} />
         </div>
       </div>
 
-      <div className="overflow-hidden rounded-lg border border-border bg-card">
-        <table className="w-full text-sm">
+      <div className="overflow-x-auto rounded-lg border border-border bg-card">
+        <table className="w-full min-w-[680px] text-sm">
           <thead>
             <tr className="border-b border-border bg-hover text-left text-xs uppercase tracking-wide text-muted">
               <th className="px-4 py-3 font-medium">Cliente</th>

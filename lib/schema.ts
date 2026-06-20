@@ -73,6 +73,9 @@ CREATE TABLE IF NOT EXISTS presupuestos (
   updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 ALTER TABLE presupuestos ADD COLUMN IF NOT EXISTS vence_el DATE;
+-- Moneda del presupuesto (ARS | USD) y cotización del dólar usada (pesos por USD).
+ALTER TABLE presupuestos ADD COLUMN IF NOT EXISTS moneda TEXT NOT NULL DEFAULT 'ARS';
+ALTER TABLE presupuestos ADD COLUMN IF NOT EXISTS cotizacion NUMERIC;
 
 CREATE TABLE IF NOT EXISTS eventos (
   id         BIGSERIAL PRIMARY KEY,

@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { MessageSquareText, Paperclip, X } from "lucide-react";
+import EmojiPicker from "@/components/EmojiPicker";
 import type { ChatMessage } from "@/lib/evolution";
 
 type RespuestaRapida = {
@@ -242,6 +243,7 @@ export default function Conversacion({
           >
             <Paperclip className="h-4 w-4" />
           </button>
+          <EmojiPicker onSelect={(e) => setTexto((t) => t + e)} />
           <button
             type="button"
             onClick={() => setMenuOpen((o) => !o)}

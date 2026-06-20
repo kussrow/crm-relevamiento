@@ -11,7 +11,7 @@ import {
 } from "@/lib/presupuestos";
 import { sendDocument } from "@/lib/evolution";
 import { generarPresupuestoPdf } from "@/lib/presupuesto-pdf";
-import { formatMoneda } from "@/lib/format";
+import { formatMoneda, equivalente } from "@/lib/format";
 import { getProductoDux, getListaPrecioDefault, precioPorLista } from "@/lib/productos";
 
 // Busca un producto de Dux (catálogo local) por código y devuelve descripción y
@@ -61,10 +61,12 @@ export async function enviarPresupuesto(
     const pdf = await generarPresupuestoPdf(p);
     const base64 = Buffer.from(pdf).toString("base64");
     const fileName = `presupuesto-${p.id}.pdf`;
+    const eq = equivalente(p.total, p.moneda, p.cotizacion);
     const caption =
       (p.cliente ? `Hola ${p.cliente}! ` : "") +
       `Te paso el presupuesto N.º ${p.id}.\n` +
-      `Total: ${formatMoneda(p.total)}` +
+      `Total: ${formatMoneda(p.total, p.moneda)}` +
+      (eq ? ` (≈ ${formatMoneda(eq.monto, eq.moneda)})` : "") +
       (p.vence_el
         ? `\nVálido hasta: ${p.vence_el.split("-").reverse().join("/")}`
         : "");

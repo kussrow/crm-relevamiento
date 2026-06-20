@@ -107,6 +107,8 @@ export interface PresupuestoItem {
   precio: number;
 }
 
+export type Moneda = "ARS" | "USD";
+
 export interface Presupuesto {
   id: number;
   negocio: string | null;
@@ -117,6 +119,8 @@ export interface Presupuesto {
   items: PresupuestoItem[];
   notas: string | null;
   total: number;
+  moneda: Moneda;
+  cotizacion: number | null; // pesos por 1 USD (para mostrar el equivalente)
   vence_el: string | null;
   created_at: string;
   updated_at: string;

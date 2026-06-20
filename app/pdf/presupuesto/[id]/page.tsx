@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { getPresupuesto, formatMoneda } from "@/lib/presupuestos";
+import { equivalente } from "@/lib/format";
 import { formatFecha } from "@/lib/scoring";
 import { EMPRESA } from "@/lib/empresa";
 import { PRESU_ESTADO_INFO } from "@/lib/presupuestos";
@@ -33,6 +34,7 @@ export default async function PresupuestoPdfPage({
   const items = (p.items || []).filter((i) => i.descripcion);
   const est = PRESU_ESTADO_INFO[p.estado] ?? PRESU_ESTADO_INFO.borrador;
   const vence = fmtVence(p.vence_el);
+  const eq = equivalente(p.total, p.moneda, p.cotizacion);
 
   return (
     <div className="min-h-screen bg-zinc-200 py-6 text-zinc-900">
@@ -139,10 +141,10 @@ export default async function PresupuestoPdfPage({
                     {it.cantidad}
                   </td>
                   <td className="border-b border-zinc-100 px-3 py-2.5 text-right">
-                    {formatMoneda(it.precio)}
+                    {formatMoneda(it.precio, p.moneda)}
                   </td>
                   <td className="border-b border-zinc-100 px-3 py-2.5 text-right font-medium">
-                    {formatMoneda((Number(it.cantidad) || 0) * (Number(it.precio) || 0))}
+                    {formatMoneda((Number(it.cantidad) || 0) * (Number(it.precio) || 0), p.moneda)}
                   </td>
                 </tr>
               ))}
@@ -150,7 +152,7 @@ export default async function PresupuestoPdfPage({
           </table>
 
           {/* Total */}
-          <div className="mt-5 flex justify-end">
+          <div className="mt-5 flex flex-col items-end">
             <div
               className="flex w-72 items-center justify-between rounded-lg px-5 py-3"
               style={{ background: `${AZUL}12`, border: `1px solid ${AZUL}33` }}
@@ -159,9 +161,15 @@ export default async function PresupuestoPdfPage({
                 Total
               </span>
               <span className="text-2xl font-extrabold" style={{ color: AZUL }}>
-                {formatMoneda(p.total)}
+                {formatMoneda(p.total, p.moneda)}
               </span>
             </div>
+            {eq && (
+              <div className="mt-1 w-72 text-right text-xs text-zinc-500">
+                Equivale a {formatMoneda(eq.monto, eq.moneda)} · Cotización US$ 1 ={" "}
+                {formatMoneda(p.cotizacion ?? 0)}
+              </div>
+            )}
           </div>
 
           {/* Notas / condiciones */}

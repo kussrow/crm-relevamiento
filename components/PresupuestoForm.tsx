@@ -9,9 +9,9 @@ import {
   enviarPresupuesto,
   buscarProductoDuxAction,
 } from "@/app/(dash)/presupuestos/actions";
-import { formatMoneda } from "@/lib/format";
+import { formatMoneda, equivalente } from "@/lib/format";
 import { ESTADOS_PRESUPUESTO } from "@/lib/types";
-import type { Presupuesto, PresupuestoItem, EstadoPresupuesto } from "@/lib/types";
+import type { Presupuesto, PresupuestoItem, EstadoPresupuesto, Moneda } from "@/lib/types";
 
 export default function PresupuestoForm({
   presupuesto,
@@ -31,6 +31,10 @@ export default function PresupuestoForm({
   );
   const [estado, setEstado] = useState<EstadoPresupuesto>(presupuesto?.estado ?? "borrador");
   const [venceEl, setVenceEl] = useState(presupuesto?.vence_el ?? "");
+  const [moneda, setMoneda] = useState<Moneda>(presupuesto?.moneda ?? "ARS");
+  const [cotizacion, setCotizacion] = useState<string>(
+    presupuesto?.cotizacion != null ? String(presupuesto.cotizacion) : ""
+  );
   const [notas, setNotas] = useState(presupuesto?.notas ?? "");
   const [items, setItems] = useState<PresupuestoItem[]>(
     presupuesto?.items?.length ? presupuesto.items : [{ descripcion: "", cantidad: 1, precio: 0 }]
@@ -79,7 +83,18 @@ export default function PresupuestoForm({
   const guardar = (after?: "enviar") =>
     start(async () => {
       setMsg(null);
-      const data = { cliente, telefono, negocio, estado, notas, items, lead_id, vence_el: venceEl };
+      const data = {
+        cliente,
+        telefono,
+        negocio,
+        estado,
+        notas,
+        items,
+        lead_id,
+        moneda,
+        cotizacion: cotizacion ? Number(cotizacion) : null,
+        vence_el: venceEl,
+      };
       const pid = await guardarPresupuesto(id, data);
       setId(pid);
       if (after === "enviar") {
@@ -159,6 +174,29 @@ export default function PresupuestoForm({
               onChange={(e) => setVenceEl(e.target.value)}
             />
           </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-xs text-faint">Moneda</span>
+            <select
+              className={inputCls}
+              value={moneda}
+              onChange={(e) => setMoneda(e.target.value as Moneda)}
+            >
+              <option value="ARS">Pesos ($)</option>
+              <option value="USD">Dólares (US$)</option>
+            </select>
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-xs text-faint">Cotización del dólar (pesos por US$)</span>
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              className={inputCls}
+              placeholder="ej. 1000"
+              value={cotizacion}
+              onChange={(e) => setCotizacion(e.target.value)}
+            />
+          </label>
         </div>
       </section>
 
@@ -220,7 +258,7 @@ export default function PresupuestoForm({
                 onChange={(e) => updateItem(i, "precio", e.target.value)}
               />
               <div className="flex items-center justify-end text-sm font-medium text-fg">
-                {formatMoneda((Number(it.cantidad) || 0) * (Number(it.precio) || 0))}
+                {formatMoneda((Number(it.cantidad) || 0) * (Number(it.precio) || 0), moneda)}
               </div>
               <button
                 onClick={() => removeItem(i)}
@@ -241,7 +279,15 @@ export default function PresupuestoForm({
 
         <div className="mt-4 flex items-center justify-end gap-3 border-t border-border pt-3">
           <span className="text-sm text-muted">Total</span>
-          <span className="text-xl font-semibold text-fg">{formatMoneda(total)}</span>
+          <div className="text-right">
+            <span className="text-xl font-semibold text-fg">{formatMoneda(total, moneda)}</span>
+            {(() => {
+              const eq = equivalente(total, moneda, cotizacion ? Number(cotizacion) : null);
+              return eq ? (
+                <div className="text-xs text-faint">≈ {formatMoneda(eq.monto, eq.moneda)}</div>
+              ) : null;
+            })()}
+          </div>
         </div>
       </section>
 

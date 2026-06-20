@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { Bell, Sun, Moon, User, Settings, LogOut } from "lucide-react";
 import BotControl from "@/components/BotControl";
+import MobileNav from "@/components/MobileNav";
 import type { Negocio } from "@/lib/types";
 
 type Notif = { id: number; nombre: string | null; negocio: string; categoria: string | null };
@@ -55,8 +56,10 @@ export default function Topbar({
   return (
     <header
       ref={ref}
-      className="flex h-14 items-center justify-end gap-1 border-b border-border bg-card px-4"
+      className="flex h-14 items-center justify-between gap-1 border-b border-border bg-card px-2 sm:px-4"
     >
+      <MobileNav />
+      <div className="ml-auto flex items-center gap-1">
       <BotControl negocio={negocio} />
       <button
         onClick={toggleTheme}
@@ -134,6 +137,7 @@ export default function Topbar({
             </form>
           </div>
         )}
+      </div>
       </div>
     </header>
   );

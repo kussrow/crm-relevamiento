@@ -130,12 +130,17 @@ export default function DuxConfig({
                 Sincronizá el catálogo para poder elegir la lista de precios.
               </p>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {scopes.map(({ scope, label }) => (
-                  <label key={scope} className="flex items-center gap-3">
-                    <span className="w-24 shrink-0 text-sm text-muted">{label}</span>
+                  <label key={scope} className="flex flex-col gap-1">
+                    <span className="flex items-center gap-1.5 text-sm text-muted">
+                      {label}
+                      {guardado === scope && (
+                        <Check className="h-3.5 w-3.5 text-emerald-500" />
+                      )}
+                    </span>
                     <select
-                      className={`${inputCls} flex-1`}
+                      className={`${inputCls} w-full min-w-0`}
                       defaultValue={listaActual[scope] ?? ""}
                       onChange={(e) => guardarLista(scope, e.target.value)}
                     >
@@ -146,9 +151,6 @@ export default function DuxConfig({
                         </option>
                       ))}
                     </select>
-                    {guardado === scope && (
-                      <Check className="h-4 w-4 shrink-0 text-emerald-500" />
-                    )}
                   </label>
                 ))}
               </div>

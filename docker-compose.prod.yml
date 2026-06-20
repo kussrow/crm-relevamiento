@@ -21,6 +21,8 @@ services:
       INGEST_TOKEN: ${INGEST_TOKEN}
       EVOLUTION_URL: ${EVOLUTION_URL}
       EVOLUTION_API_KEY: ${EVOLUTION_API_KEY}
+      DUX_API_URL: ${DUX_API_URL:-}
+      DUX_API_TOKEN: ${DUX_API_TOKEN:-}
       NODE_ENV: production
     depends_on:
       - crm_db

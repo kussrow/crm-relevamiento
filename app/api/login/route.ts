@@ -9,7 +9,9 @@ export async function POST(request: Request) {
 
   const auth = autenticar(usuario, password);
   if (auth) {
-    const res = NextResponse.redirect(new URL("/", request.url), 303);
+    // Redirección relativa: el navegador la resuelve contra el dominio público
+    // (detrás de nginx, request.url tiene el host interno del contenedor).
+    const res = new NextResponse(null, { status: 303, headers: { Location: "/" } });
     res.cookies.set("crm_session", await createSessionToken(auth.rol), {
       httpOnly: true,
       sameSite: "lax",
@@ -20,5 +22,5 @@ export async function POST(request: Request) {
     return res;
   }
 
-  return NextResponse.redirect(new URL("/login?error=1", request.url), 303);
+  return new NextResponse(null, { status: 303, headers: { Location: "/login?error=1" } });
 }

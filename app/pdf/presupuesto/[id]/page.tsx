@@ -36,6 +36,10 @@ export default async function PresupuestoPdfPage({
   const vence = fmtVence(p.vence_el);
   const eq = equivalente(p.total, p.moneda, p.cotizacion);
 
+  const esVivero = p.negocio === "vivero";
+  const NOMBRE = esVivero ? "Vivero Los Aromos" : "Piscinas Los Aromos";
+  const COLOR = esVivero ? "#16a34a" : AZUL;
+
   return (
     <div className="min-h-screen bg-zinc-200 py-6 text-zinc-900">
       <style dangerouslySetInnerHTML={{ __html: PRINT_CSS }} />
@@ -53,11 +57,11 @@ export default async function PresupuestoPdfPage({
           {/* Encabezado */}
           <header
             className="flex items-start justify-between pb-5"
-            style={{ borderBottom: `2px solid ${AZUL}` }}
+            style={{ borderBottom: `2px solid ${COLOR}` }}
           >
             <div>
-              <h1 className="text-2xl font-extrabold tracking-tight" style={{ color: AZUL }}>
-                {EMPRESA.nombre}
+              <h1 className="text-2xl font-extrabold tracking-tight" style={{ color: COLOR }}>
+                {NOMBRE}
               </h1>
               <div className="mt-2 space-y-0.5 text-xs leading-relaxed text-zinc-500">
                 <div>{EMPRESA.direccion}</div>
@@ -70,7 +74,7 @@ export default async function PresupuestoPdfPage({
             <div className="text-right">
               <div
                 className="inline-block rounded-md px-4 py-1.5 text-sm font-bold uppercase tracking-widest text-white"
-                style={{ background: AZUL }}
+                style={{ background: COLOR }}
               >
                 Presupuesto
               </div>
@@ -101,7 +105,7 @@ export default async function PresupuestoPdfPage({
               </div>
               <div
                 className="mt-1 inline-block rounded-md px-3 py-1 text-xs font-semibold"
-                style={{ background: `${AZUL}14`, color: AZUL }}
+                style={{ background: `${COLOR}14`, color: COLOR }}
               >
                 {est.label}
               </div>
@@ -112,16 +116,16 @@ export default async function PresupuestoPdfPage({
           <table className="mt-6 w-full border-collapse text-sm">
             <thead>
               <tr className="text-left text-xs uppercase tracking-wide text-white">
-                <th className="rounded-l-md px-3 py-2.5" style={{ background: AZUL }}>
+                <th className="rounded-l-md px-3 py-2.5" style={{ background: COLOR }}>
                   Descripción
                 </th>
-                <th className="w-20 px-3 py-2.5 text-right" style={{ background: AZUL }}>
+                <th className="w-20 px-3 py-2.5 text-right" style={{ background: COLOR }}>
                   Cant.
                 </th>
-                <th className="w-32 px-3 py-2.5 text-right" style={{ background: AZUL }}>
+                <th className="w-32 px-3 py-2.5 text-right" style={{ background: COLOR }}>
                   Precio unit.
                 </th>
-                <th className="w-32 rounded-r-md px-3 py-2.5 text-right" style={{ background: AZUL }}>
+                <th className="w-32 rounded-r-md px-3 py-2.5 text-right" style={{ background: COLOR }}>
                   Subtotal
                 </th>
               </tr>
@@ -155,12 +159,12 @@ export default async function PresupuestoPdfPage({
           <div className="mt-5 flex flex-col items-end">
             <div
               className="flex w-72 items-center justify-between rounded-lg px-5 py-3"
-              style={{ background: `${AZUL}12`, border: `1px solid ${AZUL}33` }}
+              style={{ background: `${COLOR}12`, border: `1px solid ${COLOR}33` }}
             >
               <span className="text-sm font-semibold uppercase tracking-wide text-zinc-600">
                 Total
               </span>
-              <span className="text-2xl font-extrabold" style={{ color: AZUL }}>
+              <span className="text-2xl font-extrabold" style={{ color: COLOR }}>
                 {formatMoneda(p.total, p.moneda)}
               </span>
             </div>
@@ -183,7 +187,7 @@ export default async function PresupuestoPdfPage({
           )}
 
           <footer className="mt-12 border-t border-zinc-200 pt-4 text-center text-xs text-zinc-400">
-            Gracias por su consulta · {EMPRESA.nombre} · {EMPRESA.email} · WhatsApp{" "}
+            Gracias por su consulta · {NOMBRE} · {EMPRESA.email} · WhatsApp{" "}
             {EMPRESA.whatsapp}
           </footer>
         </div>

@@ -3,14 +3,17 @@ import { EMPRESA } from "./empresa";
 import { formatMoneda, equivalente } from "./format";
 import type { Presupuesto } from "./types";
 
-// Colores (equivalentes a los del PDF HTML)
-const AZUL = rgb(0.145, 0.388, 0.922); // #2563eb
+// Colores base
+const AZUL_PISCINAS = rgb(0.145, 0.388, 0.922); // #2563eb
+const VERDE_VIVERO  = rgb(0.086, 0.639, 0.290);  // #16a34a
 const BLANCO = rgb(1, 1, 1);
 const TXT = rgb(0.09, 0.09, 0.11);
 const GRIS = rgb(0.44, 0.44, 0.48);
 const GRIS_CLARO = rgb(0.6, 0.6, 0.64);
-const FONDO_SUAVE = rgb(0.97, 0.98, 0.99);
-const BORDE = rgb(0.89, 0.9, 0.92);
+const FONDO_SUAVE_PISCINAS = rgb(0.97, 0.98, 0.99);
+const FONDO_SUAVE_VIVERO   = rgb(0.94, 0.99, 0.957);
+const BORDE_PISCINAS = rgb(0.89, 0.9, 0.92);
+const BORDE_VIVERO   = rgb(0.733, 0.969, 0.816);
 
 const A4 = { w: 595.28, h: 841.89 };
 const MARGEN = 48;
@@ -62,8 +65,14 @@ function wrap(text: string, font: PDFFont, size: number, maxWidth: number): stri
 }
 
 export async function generarPresupuestoPdf(p: Presupuesto): Promise<Uint8Array> {
+  const esVivero = p.negocio === "vivero";
+  const NOMBRE = esVivero ? "Vivero Los Aromos" : "Piscinas Los Aromos";
+  const AZUL = esVivero ? VERDE_VIVERO : AZUL_PISCINAS;
+  const FONDO_SUAVE = esVivero ? FONDO_SUAVE_VIVERO : FONDO_SUAVE_PISCINAS;
+  const BORDE = esVivero ? BORDE_VIVERO : BORDE_PISCINAS;
+
   const doc = await PDFDocument.create();
-  doc.setTitle(`Presupuesto ${p.id} - ${EMPRESA.nombre}`);
+  doc.setTitle(`Presupuesto ${p.id} - ${NOMBRE}`);
   const font = await doc.embedFont(StandardFonts.Helvetica);
   const bold = await doc.embedFont(StandardFonts.HelveticaBold);
 
@@ -97,7 +106,7 @@ export async function generarPresupuestoPdf(p: Presupuesto): Promise<Uint8Array>
 
   // ===== Encabezado: empresa (izq) + sello PRESUPUESTO (der) =====
   y = A4.h - 56;
-  txt(EMPRESA.nombre, MARGEN, y, 20, bold, AZUL);
+  txt(NOMBRE, MARGEN, y, 20, bold, AZUL);
   let yd = y - 16;
   for (const linea of [
     EMPRESA.direccion,
@@ -230,8 +239,8 @@ export async function generarPresupuestoPdf(p: Presupuesto): Promise<Uint8Array>
     y: y - totalH,
     width: totalW,
     height: totalH,
-    color: rgb(0.93, 0.95, 0.99),
-    borderColor: rgb(0.78, 0.84, 0.97),
+    color: esVivero ? rgb(0.9, 0.98, 0.93) : rgb(0.93, 0.95, 0.99),
+    borderColor: esVivero ? rgb(0.6, 0.92, 0.7) : rgb(0.78, 0.84, 0.97),
     borderWidth: 1,
   });
   txt("TOTAL", totalX + 14, y - 22, 11, bold, rgb(0.35, 0.35, 0.4));
@@ -278,7 +287,7 @@ export async function generarPresupuestoPdf(p: Presupuesto): Promise<Uint8Array>
   }
 
   // ===== Pie =====
-  const pie = `Gracias por su consulta · ${EMPRESA.nombre} · ${EMPRESA.email} · WhatsApp ${EMPRESA.whatsapp}`;
+  const pie = `Gracias por su consulta · ${NOMBRE} · ${EMPRESA.email} · WhatsApp ${EMPRESA.whatsapp}`;
   const pieClean = sanitize(pie);
   const pieW = font.widthOfTextAtSize(pieClean, 8);
   page.drawText(pieClean, {
